@@ -119,6 +119,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = 'config.urls'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 TEMPLATES = [
     {

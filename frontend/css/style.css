@@ -172,8 +172,9 @@
         }
 
         .profile-dropdown-menu .user-info {
+            gap: 18px;
             display: flex;
-            align-items: center;
+            align-items: center ;
             padding: 15px 20px;
         }
 
@@ -185,6 +186,14 @@
 
         .profile-dropdown-menu .user-details {
             flex-grow: 1;
+        }
+
+         .profile-dropdown-menu .user-avatar {
+            width: 10px;
+            height: 10px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
         .profile-dropdown-menu .user-name-dropdown {
