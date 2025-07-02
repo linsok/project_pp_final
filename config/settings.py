@@ -116,6 +116,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'rupproombooking@gmail.com'
 EMAIL_HOST_PASSWORD = 'fhee omfo cwng bhys'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EXPIRED_ACCOUNT_EMAIL_DAYS = 3  # Days after which an unverified account email will be deleted
 
 ROOT_URLCONF = 'config.urls'
 
@@ -148,8 +149,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'myprojectdb',       # name of your database
+        'USER': 'myuser',            # your postgres user
+        'PASSWORD': '123212', # the password you set
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
