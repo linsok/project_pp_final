@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth - Complete Solution</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #db4437;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #c23321;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .solution {
+            background-color: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .solution h3 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google OAuth Complete Solution</h1>
+        
+        <div class="section">
+            <h2>🚨 Problem Diagnosis</h2>
+            <div class="warning">
+                <strong>Error:</strong> "SyntaxError: Unexpected token '&lt;', "&lt;!DOCTYPE "... is not valid JSON"
+                <br><br>
+                <strong>Root Cause:</strong> Your frontend code is trying to parse HTML as JSON. This happens when:
+                <ul>
+                    <li>You're calling a web OAuth endpoint expecting JSON</li>
+                    <li>The OAuth callback returns HTML instead of JSON</li>
+                    <li>CORS issues causing error pages to be returned</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="solution">
+            <h3>✅ Solution 1: Use Web Flow (Recommended)</h3>
+            <p>This is the standard OAuth flow that works with most frontend frameworks:</p>
+            
+            <h4>JavaScript Implementation:</h4>
+            <div class="code-block">
+function loginWithGoogle() {
+    // Option 1: Direct redirect (for regular web apps)
+    window.location.href = 'http://localhost:8000/accounts/google/login/';
+    
+    // Option 2: Open in popup (for SPAs)
+    const popup = window.open(
+        'http://localhost:8000/accounts/google/login/', 
+        'google_login', 
+        'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+    
+    // Listen for popup to close or redirect
+    const checkClosed = setInterval(() => {
+        if (popup.closed) {
+            clearInterval(checkClosed);
+            // Check if user is now logged in
+            checkLoginStatus();
+        }
+    }, 1000);
+}
+
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('http://localhost:8000/api/google/success/', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Login successful:', data);
+            // Handle successful login
+            handleLoginSuccess(data);
+        }
+    } catch (error) {
+        console.log('Not logged in yet');
+    }
+}
+
+function handleLoginSuccess(data) {
+    // Store the token
+    localStorage.setItem('auth_token', data.token);
+    
+    // Update UI
+    document.getElementById('user-info').innerHTML = `
+        Welcome, ${data.user.first_name} ${data.user.last_name}!
+        <br>Email: ${data.user.email}
+    `;
+    
+    // Hide login button, show logout button
+    document.getElementById('login-btn').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'block';
+}
+            </div>
+            
+            <button onclick="testWebFlowSolution()">Test Web Flow Solution</button>
+            <div id="webFlowStatus" class="status" style="display:none;"></div>
+        </div>
+
+        <div class="solution">
+            <h3>✅ Solution 2: API Endpoint (For Mobile/SPA with Token)</h3>
+            <p>Use this only if you have a Google access token from Google OAuth SDK:</p>
+            
+            <div class="code-block">
+// Only use this if you have a Google access token
+async function loginWithGoogleToken(googleAccessToken) {
+    try {
+        const response = await fetch('http://localhost:8000/api/google/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                access_token: googleAccessToken
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Login successful:', data);
+            return data;
+        } else {
+            const error = await response.json();
+            console.error('Login failed:', error);
+            throw new Error(error.detail || 'Login failed');
+        }
+    } catch (error) {
+        console.error('Network error:', error);
+        throw error;
+    }
+}
+            </div>
+            
+            <button onclick="testApiSolution()">Test API Solution</button>
+            <div id="apiStatus" class="status" style="display:none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Frontend Framework Examples</h2>
+            
+            <h3>React Example:</h3>
+            <div class="code-block">
+import React, { useState, useEffect } from 'react';
+
+function GoogleLogin() {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleGoogleLogin = () => {
+        setLoading(true);
+        
+        // Open Google OAuth in popup
+        const popup = window.open(
+            'http://localhost:8000/accounts/google/login/',
+            'google_login',
+            'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+
+        // Monitor popup
+        const checkClosed = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(checkClosed);
+                setLoading(false);
+                checkLoginStatus();
+            }
+        }, 1000);
+    };
+
+    const checkLoginStatus = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/google/success/', {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user);
+                localStorage.setItem('auth_token', data.token);
+            }
+        } catch (error) {
+            console.log('Login check failed');
+        }
+    };
+
+    return (
+        &lt;div&gt;
+            {user ? (
+                &lt;div&gt;
+                    &lt;h3&gt;Welcome, {user.first_name}!&lt;/h3&gt;
+                    &lt;p&gt;Email: {user.email}&lt;/p&gt;
+                &lt;/div&gt;
+            ) : (
+                &lt;button onClick={handleGoogleLogin} disabled={loading}&gt;
+                    {loading ? 'Logging in...' : 'Login with Google'}
+                &lt;/button&gt;
+            )}
+        &lt;/div&gt;
+    );
+}
+
+export default GoogleLogin;
+            </div>
+
+            <h3>Vue.js Example:</h3>
+            <div class="code-block">
+&lt;template&gt;
+  &lt;div&gt;
+    &lt;div v-if="user"&gt;
+      &lt;h3&gt;Welcome, {{ user.first_name }}!&lt;/h3&gt;
+      &lt;p&gt;Email: {{ user.email }}&lt;/p&gt;
+    &lt;/div&gt;
+    &lt;button v-else @click="handleGoogleLogin" :disabled="loading"&gt;
+      {{ loading ? 'Logging in...' : 'Login with Google' }}
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data() {
+    return {
+      user: null,
+      loading: false
+    };
+  },
+  methods: {
+    handleGoogleLogin() {
+      this.loading = true;
+      
+      const popup = window.open(
+        'http://localhost:8000/accounts/google/login/',
+        'google_login',
+        'width=500,height=600,scrollbars=yes,resizable=yes'
+      );
+
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          this.loading = false;
+          this.checkLoginStatus();
+        }
+      }, 1000);
+    },
+    
+    async checkLoginStatus() {
+      try {
+        const response = await fetch('http://localhost:8000/api/google/success/', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          this.user = data.user;
+          localStorage.setItem('auth_token', data.token);
+        }
+      } catch (error) {
+        console.log('Login check failed');
+      }
+    }
+  }
+};
+&lt;/script&gt;
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Test Current Configuration</h2>
+            <button onclick="testCurrentConfig()">Test All Endpoints</button>
+            <div id="configStatus" class="status" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        function testWebFlowSolution() {
+            showStatus('webFlowStatus', '🔄 Testing Web Flow Solution...\n\nThis will open Google OAuth in a popup window.', 'info');
+            
+            setTimeout(() => {
+                const popup = window.open(
+                    `${API_BASE}/accounts/google/login/`,
+                    'google_login',
+                    'width=500,height=600,scrollbars=yes,resizable=yes'
+                );
+                
+                let checkCount = 0;
+                const checkClosed = setInterval(() => {
+                    checkCount++;
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        showStatus('webFlowStatus', '✅ Popup closed. Checking login status...', 'info');
+                        
+                        // Check if login was successful
+                        setTimeout(() => {
+                            checkLoginStatus('webFlowStatus');
+                        }, 1000);
+                    } else if (checkCount > 300) { // 5 minutes
+                        clearInterval(checkClosed);
+                        showStatus('webFlowStatus', '⏰ Popup check timed out. Please try again.', 'warning');
+                    }
+                }, 1000);
+            }, 1000);
+        }
+        
+        async function testApiSolution() {
+            showStatus('apiStatus', '🔄 Testing API Solution...\n\nThis will show the expected error since we don\'t have a Google access token.', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/google/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                showStatus('apiStatus', `📄 API Response (this is the expected error):\n${JSON.stringify(data, null, 2)}`, 'warning');
+            } catch (error) {
+                showStatus('apiStatus', `❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkLoginStatus(statusId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/google/success/`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(statusId, `🎉 Login Successful!\n\nUser Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showStatus(statusId, `❌ Login Failed:\n${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showStatus(statusId, `❌ Error checking login status: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCurrentConfig() {
+            showStatus('configStatus', '🔄 Testing all endpoints...', 'info');
+            
+            const endpoints = [
+                { url: '/api/google/url/', method: 'GET', name: 'OAuth URL' },
+                { url: '/api/google/success/', method: 'GET', name: 'Success Check' },
+                { url: '/accounts/google/login/', method: 'GET', name: 'Web Flow' }
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint.url}`, {
+                        method: endpoint.method,
+                        credentials: 'include'
+                    });
+                    
+                    const contentType = response.headers.get('Content-Type');
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        try {
+                            const data = await response.json();
+                            results.push(`✅ ${endpoint.name}: ${response.status} (JSON)`);
+                        } catch (e) {
+                            results.push(`⚠️ ${endpoint.name}: ${response.status} (Invalid JSON)`);
+                        }
+                    } else {
+                        results.push(`📄 ${endpoint.name}: ${response.status} (HTML)`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${endpoint.name}: ${error.message}`);
+                }
+            }
+            
+            showStatus('configStatus', `📊 Endpoint Test Results:\n\n${results.join('\n')}`, 'info');
+        }
+        
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        // Auto-test configuration on page load
+        window.addEventListener('load', function() {
+            setTimeout(testCurrentConfig, 1000);
+        });
+    </script>
+</body>
+</html>

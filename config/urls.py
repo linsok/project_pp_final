@@ -21,13 +21,24 @@ from accounts import views
 from django.conf import settings
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
+from django.views.static import serve
+from django.urls import re_path
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('dj_rest_auth.urls')),            # login/logout only
     path('auth/registration/', include('dj_rest_auth.registration.urls')), # signup
-    path('accounts/', include('allauth.urls')),
+    path('api/', include('accounts.urls')),  # Custom API endpoints including Google OAuth
+    path('accounts/', include('allauth.urls')),  # This handles Google OAuth web flow
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
-
+    
+    # Frontend HTML files
+    path('frontend/home.html', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('frontend/index.html', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('', TemplateView.as_view(template_name='index.html'), name='root'),
+    
+    # Frontend static files (CSS, JS, images)
+    re_path(r'^frontend/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'frontend'}),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

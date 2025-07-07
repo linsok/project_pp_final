@@ -92,13 +92,9 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Google OAuth settings
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'APP': {
-            'client_id': '650291360343-q4ejdtvov5u7flp5a3unm020kbelutd4.apps.googleusercontent.com',
-            'secret': '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',
-            'key': ''
-        },
         'SCOPE': [
             'profile',
             'email',
@@ -109,7 +105,16 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Additional socialaccount settings for Google OAuth
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Custom redirect URLs after OAuth success
+LOGIN_REDIRECT_URL = '/frontend/home.html'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/frontend/index.html'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -127,7 +132,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": [],  
+        "DIRS": [BASE_DIR / 'templates', BASE_DIR / 'frontend'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,6 +145,9 @@ TEMPLATES = [
 ]
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend',
+]
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -201,5 +209,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SITE_ID = 1
-    
+
 

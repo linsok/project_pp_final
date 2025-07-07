@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Google OAuth Final Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .steps {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .steps h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .code {
+            background-color: #f8f9fa;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            border: 1px solid #e9ecef;
+        }
+        button {
+            background-color: #db4437;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+            margin: 30px auto;
+        }
+        button:hover {
+            background-color: #c23321;
+        }
+        .config-box {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .config-box h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .url-list {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            margin: 10px 0;
+        }
+        .url-list code {
+            display: block;
+            padding: 5px 0;
+            font-size: 14px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google OAuth Configuration Guide</h1>
+        
+        <div class="alert alert-success">
+            <strong>✅ Django Backend:</strong> Fully configured and ready!
+        </div>
+        
+        <div class="alert alert-warning">
+            <strong>⚠️ Action Required:</strong> Configure Google OAuth app callback URLs
+        </div>
+        
+        <div class="config-box">
+            <h4>🔗 Google Cloud Console Configuration</h4>
+            <p><strong>1. Go to:</strong> <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console - Credentials</a></p>
+            <p><strong>2. Find your OAuth 2.0 Client ID:</strong></p>
+            <div class="code">650291360343-q4ejdtvov5u7flp5a3unm020kbelutd4.apps.googleusercontent.com</div>
+            <p><strong>3. Add these EXACT URLs to "Authorized redirect URIs":</strong></p>
+            <div class="url-list">
+                <code>http://localhost:8000/accounts/google/login/callback/</code>
+                <code>http://127.0.0.1:8000/accounts/google/login/callback/</code>
+            </div>
+            <p><strong>4. Save the changes</strong></p>
+            <p><strong>5. Wait 5-10 minutes</strong> for Google to propagate the changes</p>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>📋 Critical Notes:</strong>
+            <ul>
+                <li>URLs must be <strong>EXACT</strong> (including trailing slash)</li>
+                <li>Use <strong>http://</strong> NOT https:// for localhost</li>
+                <li>Add <strong>BOTH</strong> localhost AND 127.0.0.1 URLs</li>
+                <li>Make sure there are no extra spaces or characters</li>
+            </ul>
+        </div>
+        
+        <div class="steps">
+            <h3>🧪 Testing Steps (After Configuration)</h3>
+            <ol>
+                <li>Configure the Google OAuth app callback URLs (above)</li>
+                <li>Wait 5-10 minutes for Google to propagate changes</li>
+                <li>Click the "Test OAuth Flow" button below</li>
+                <li>Complete the Google OAuth process</li>
+                <li>You should be redirected to the debug page showing success</li>
+                <li>If successful, you'll see your user account created in the database</li>
+            </ol>
+        </div>
+        
+        <button onclick="testOAuthFlow()">🔐 Test OAuth Flow</button>
+        
+        <div class="alert alert-info">
+            <strong>🔍 What This Test Will Do:</strong>
+            <ul>
+                <li>Start the Google OAuth flow</li>
+                <li>Redirect to Google for authentication</li>
+                <li>Google will redirect back to Django</li>
+                <li>Django will process the OAuth response</li>
+                <li>Create/login user and redirect to debug page</li>
+                <li>Debug page will show success/failure details</li>
+            </ul>
+        </div>
+        
+        <div class="steps">
+            <h3>🐛 If Still Not Working</h3>
+            <ol>
+                <li>Check browser console for JavaScript errors</li>
+                <li>Verify the callback URLs are exactly as shown above</li>
+                <li>Try in an incognito/private browsing window</li>
+                <li>Clear browser cache and cookies</li>
+                <li>Double-check the Google OAuth app client ID matches</li>
+                <li>Ensure you're using the correct Google account</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function testOAuthFlow() {
+            alert('🚀 Starting OAuth flow...\n\nYou will be redirected to Google for authentication.\nAfter completing the process, you should land on a debug page showing the results.');
+            
+            // Redirect to OAuth URL
+            window.location.href = 'http://localhost:8000/accounts/google/login/';
+        }
+    </script>
+</body>
+</html>
