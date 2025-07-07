@@ -12,15 +12,13 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect
 from django.conf import settings
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import login
-from django.http import HttpResponse
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-import json
+import random
+import string
 
 User = get_user_model()
 
@@ -84,7 +82,7 @@ def verify_reset_code(request):
         reset_code = PasswordResetCode.objects.filter(
             user=user,
             code=code,
-            is_used=False
+            used=False
         ).first()
         
         if not reset_code or not reset_code.is_valid():
@@ -115,7 +113,7 @@ def reset_password_with_code(request):
         reset_code = PasswordResetCode.objects.filter(
             user=user,
             code=code,
-            is_used=False
+            used=False
         ).first()
         
         if not reset_code or not reset_code.is_valid():
@@ -129,7 +127,7 @@ def reset_password_with_code(request):
         reset_code.mark_as_used()
         
         # Mark all other codes for this user as used
-        PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
+        PasswordResetCode.objects.filter(user=user, used=False).update(used=True)
         
         return Response({
             'message': 'Password reset successfully',

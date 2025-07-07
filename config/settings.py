@@ -113,6 +113,10 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # Custom redirect URLs after OAuth success
 LOGIN_REDIRECT_URL = '/frontend/home.html'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/frontend/index.html'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Custom adapters for debugging (temporarily disabled)
+# SOCIALACCOUNT_ADAPTER = 'accounts.adapters.DebugSocialAccountAdapter'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
