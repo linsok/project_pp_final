@@ -152,7 +152,59 @@ class ProfileDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.profile
+        profile, created = Profile.objects.get_or_create(user=self.request.user)
+        return profile
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    def patch(self, request, *args, **kwargs):
+        """Handle image uploads to database"""
+        profile = self.get_object()
+        
+        # Check if this is an image upload
+        if 'image' in request.FILES:
+            image_file = request.FILES['image']
+            
+            # Validate file type
+            if not image_file.content_type.startswith('image/'):
+                return Response({'error': 'File must be an image'}, status=400)
+            
+            # Validate file size (5MB limit)
+            if image_file.size > 5 * 1024 * 1024:
+                return Response({'error': 'Image size must be less than 5MB'}, status=400)
+            
+            # Save image to database
+            success = profile.save_image_to_db(image_file)
+            if success:
+                # Return updated profile data
+                serializer = self.get_serializer(profile)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'Failed to save image'}, status=500)
+        
+        # For other updates, use the default behavior
+        return super().patch(request, *args, **kwargs)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@api_view(['GET'])
+def debug_profile(request):
+    """Debug endpoint to test profile data"""
+    if request.user.is_authenticated:
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        serializer = ProfileSerializer(profile, context={'request': request})
+        return Response({
+            'user_id': request.user.id,
+            'username': request.user.username,
+            'profile_data': serializer.data,
+            'image_field': str(profile.image),
+            'image_url': profile.image.url if profile.image else None,
+        })
+    else:
+        return Response({'error': 'Not authenticated'}, status=401)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
