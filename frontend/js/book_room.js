@@ -373,13 +373,8 @@ Click OK to confirm or Cancel to go back and edit.`);
             console.log('Booking response:', result);
 
             if (response.ok) {
-                alert("✅ Room booked successfully! You will receive a confirmation email shortly.");
+                showBookingConfirmation(result, bookingData);
                 form.reset(); // Clear the form
-                
-                // Optionally redirect to booking history
-                if (confirm("Would you like to view your bookings?")) {
-                    window.location.href = "booking_history.html";
-                }
             } else {
                 // Handle API errors
                 let errorMessage = "❌ Failed to book room. ";
@@ -398,11 +393,11 @@ Click OK to confirm or Cancel to go back and edit.`);
                     errorMessage += "Please check your information and try again.";
                 }
                 
-                alert(errorMessage);
+                showErrorMessage(errorMessage);
             }
         } catch (error) {
             console.error('Booking error:', error);
-            alert("❌ Network error. Please check your connection and try again.");
+            showErrorMessage("Network error. Please check your connection and try again.");
         } finally {
             // Restore button state
             const submitButton = document.querySelector('button[type="submit"]');
@@ -410,4 +405,138 @@ Click OK to confirm or Cancel to go back and edit.`);
             submitButton.textContent = originalText;
         }
     }
+
+    // Function to show booking confirmation message
+    function showBookingConfirmation(bookingResult, bookingData) {
+        const overlay = document.createElement('div');
+        overlay.className = 'booking-message-overlay';
+        
+        const message = document.createElement('div');
+        message.className = 'booking-message success';
+        
+        // Format the booking details
+        const roomInfo = bookingResult.room_details ? 
+            `${bookingResult.room_details.roomNumber} in ${bookingResult.room_details.buildingName}` : 
+            `${bookingData.room_number} in ${bookingData.building_name}`;
+        
+        // Format date
+        const bookingDate = new Date(bookingData.booking_date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        message.innerHTML = `
+            <div class="booking-message-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Booking Confirmed!</h3>
+            <p>Your room has been successfully reserved. You will receive a confirmation email shortly.</p>
+            
+            <div class="booking-message-details">
+                <h4>Booking Details:</h4>
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Booking ID:</span>
+                    <span class="booking-detail-value">#${bookingResult.id}</span>
+                </div>
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Room:</span>
+                    <span class="booking-detail-value">${roomInfo}</span>
+                </div>
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Date:</span>
+                    <span class="booking-detail-value">${bookingDate}</span>
+                </div>
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Time:</span>
+                    <span class="booking-detail-value">${bookingData.start_time} - ${bookingData.end_time}</span>
+                </div>
+                ${bookingData.purpose ? `
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Purpose:</span>
+                    <span class="booking-detail-value">${bookingData.purpose}</span>
+                </div>
+                ` : ''}
+                <div class="booking-detail-item">
+                    <span class="booking-detail-label">Status:</span>
+                    <span class="booking-detail-value">Pending Confirmation</span>
+                </div>
+            </div>
+            
+            <div class="booking-message-actions">
+                <button class="booking-message-btn secondary" onclick="closeBookingMessage()">
+                    <i class="fas fa-check"></i> Done
+                </button>
+                <a href="booking_history.html" class="booking-message-btn primary">
+                    <i class="fas fa-history"></i> View My Bookings
+                </a>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(message);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', closeBookingMessage);
+    }
+    
+    // Function to show error message
+    function showErrorMessage(errorText) {
+        const overlay = document.createElement('div');
+        overlay.className = 'booking-message-overlay';
+        
+        const message = document.createElement('div');
+        message.className = 'booking-message error';
+        
+        message.innerHTML = `
+            <div class="booking-message-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Booking Failed</h3>
+            <p>${errorText}</p>
+            
+            <div class="booking-message-actions">
+                <button class="booking-message-btn secondary" onclick="closeBookingMessage()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button class="booking-message-btn primary" onclick="closeBookingMessage()">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        document.body.appendChild(message);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', closeBookingMessage);
+    }
+    
+    // Function to close booking message
+    window.closeBookingMessage = function() {
+        const overlay = document.querySelector('.booking-message-overlay');
+        const message = document.querySelector('.booking-message');
+        
+        if (overlay && message) {
+            overlay.classList.add('fade-out');
+            message.classList.add('fade-out');
+            
+            setTimeout(() => {
+                if (overlay && overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+                if (message && message.parentNode) {
+                    message.parentNode.removeChild(message);
+                }
+            }, 300);
+        }
+    };
+    
+    // Close message on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeBookingMessage();
+        }
+    });
 });
