@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const password = document.getElementById('signup-password').value;
       const password2 = document.getElementById('signup-password2').value;
 
-      if (!phone || !username || !email || !password || !password2) {
-        errorDiv.innerText = "Please fill in all fields.";
+      if (!username || !email || !password || !password2) {
+        errorDiv.innerText = "Please fill in all required fields.";
         errorDiv.style.display = "block";
         return;
       }
@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: username,
-          phone: phone,
           email: email,
           password1: password,
           password2: password2
