@@ -253,7 +253,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector("form");
 
     form.addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevent real submission
+        e.preventDefault(); // Prevent default form submission
+
+        // Check authentication
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert("❌ Please log in to make a booking.");
+            window.location.href = "index.html";
+            return;
+        }
 
         const requiredFields = [
             "firstName", "surname", "email", "month", "day", "year",
@@ -261,27 +269,145 @@ document.addEventListener("DOMContentLoaded", function () {
         ];
 
         let allFilled = true;
+        const missingFields = [];
 
         requiredFields.forEach(id => {
             const field = document.getElementById(id);
             if (!field || !field.value.trim()) {
                 allFilled = false;
+                missingFields.push(id);
             }
         });
 
         if (!allFilled) {
-            alert("⚠️ Please fill in all required information.");
+            alert(`⚠️ Please fill in all required fields: ${missingFields.join(', ')}`);
+            return;
+        }
+
+        // Collect form data
+        const formData = {
+            firstName: document.getElementById("firstName").value.trim(),
+            surname: document.getElementById("surname").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phoneNumber: document.getElementById("phoneNumber").value.trim(),
+            month: document.getElementById("month").value,
+            day: document.getElementById("day").value,
+            year: document.getElementById("year").value,
+            building: document.getElementById("building").value,
+            roomNumber: document.getElementById("roomNumber").value.trim(),
+            capacity: document.getElementById("capacity").value,
+            timeFrom: document.getElementById("timeFrom").value,
+            timeTo: document.getElementById("timeTo").value,
+            role: document.getElementById("role").value,
+            meetingAgenda: document.getElementById("meetingAgenda").value.trim()
+        };
+
+        // Validate time
+        if (formData.timeFrom >= formData.timeTo) {
+            alert("⚠️ End time must be after start time.");
+            return;
+        }
+
+        // Format date
+        const bookingDate = `${formData.year}-${String(parseInt(formData.month) + 1).padStart(2, '0')}-${String(formData.day).padStart(2, '0')}`;
+        
+        // Check if date is in the future
+        const today = new Date();
+        const selectedDate = new Date(bookingDate);
+        if (selectedDate < today.setHours(0, 0, 0, 0)) {
+            alert("⚠️ Cannot book rooms for past dates.");
             return;
         }
 
         // Show confirmation dialog
-        const confirmBooking = confirm("📝 Do you want to confirm your room booking?\nClick OK to confirm or Cancel to go back and edit.");
+        const confirmBooking = confirm(`📝 Please confirm your booking details:
+
+Name: ${formData.firstName} ${formData.surname}
+Email: ${formData.email}
+Date: ${bookingDate}
+Time: ${formData.timeFrom} - ${formData.timeTo}
+Building: ${formData.building}
+Room: ${formData.roomNumber}
+Purpose: ${formData.meetingAgenda || 'Not specified'}
+
+Click OK to confirm or Cancel to go back and edit.`);
         
-        if (confirmBooking) {
-            alert("✅ Room booked successfully!");
-            form.reset(); // Optional: clear the form
-        } else {
-            alert("❌ Booking cancelled. You can edit the form.");
+        if (!confirmBooking) {
+            return;
         }
+
+        // Prepare booking data for API
+        const bookingData = {
+            room_number: formData.roomNumber,
+            building_name: formData.building,
+            booking_date: bookingDate,
+            start_time: formData.timeFrom,
+            end_time: formData.timeTo,
+            purpose: formData.meetingAgenda || `${formData.role} meeting`
+        };
+
+        // Submit booking to API
+        submitBooking(bookingData, token);
     });
+
+    async function submitBooking(bookingData, token) {
+        try {
+            // Show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = "Submitting...";
+
+            console.log('Submitting booking:', bookingData);
+
+            const response = await fetch('http://localhost:8000/api/bookings/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
+                body: JSON.stringify(bookingData)
+            });
+
+            const result = await response.json();
+            console.log('Booking response:', result);
+
+            if (response.ok) {
+                alert("✅ Room booked successfully! You will receive a confirmation email shortly.");
+                form.reset(); // Clear the form
+                
+                // Optionally redirect to booking history
+                if (confirm("Would you like to view your bookings?")) {
+                    window.location.href = "booking_history.html";
+                }
+            } else {
+                // Handle API errors
+                let errorMessage = "❌ Failed to book room. ";
+                
+                if (result.non_field_errors) {
+                    errorMessage += result.non_field_errors.join(', ');
+                } else if (result.detail) {
+                    errorMessage += result.detail;
+                } else if (result.room_number) {
+                    errorMessage += "Invalid room number.";
+                } else if (result.booking_date) {
+                    errorMessage += "Invalid date.";
+                } else if (result.start_time || result.end_time) {
+                    errorMessage += "Invalid time format.";
+                } else {
+                    errorMessage += "Please check your information and try again.";
+                }
+                
+                alert(errorMessage);
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert("❌ Network error. Please check your connection and try again.");
+        } finally {
+            // Restore button state
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        }
+    }
 });

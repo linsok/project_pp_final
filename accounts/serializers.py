@@ -80,35 +80,80 @@ class BookingSerializer(serializers.ModelSerializer):
     room_details = RoomSerializer(source='room', read_only=True)
     user_name = serializers.CharField(source='user.username', read_only=True)
     
+    # Accept room_number and building_name instead of room ID
+    room_number = serializers.CharField(write_only=True, required=False)
+    building_name = serializers.CharField(write_only=True, required=False)
+    
     class Meta:
         model = Booking
         fields = ['id', 'room', 'room_details', 'user_name', 'booking_date', 
-                 'start_time', 'end_time', 'purpose', 'status', 'created_at']
+                 'start_time', 'end_time', 'purpose', 'status', 'created_at',
+                 'room_number', 'building_name']
         
     def validate(self, data):
-        """Validate booking doesn't conflict with existing bookings"""
-        room = data['room']
-        booking_date = data['booking_date']
-        start_time = data['start_time']
-        end_time = data['end_time']
+        """Validate booking and find room by number and building"""
         
-        # Check for time conflicts
-        conflicting_bookings = Booking.objects.filter(
-            room=room,
-            booking_date=booking_date,
-            status__in=['pending', 'confirmed']
-        ).filter(
-            models.Q(start_time__lt=end_time) & models.Q(end_time__gt=start_time)
-        )
+        # Handle room lookup if room_number and building_name are provided
+        if 'room_number' in data and 'building_name' in data:
+            try:
+                room = Room.objects.get(
+                    roomNumber=data['room_number'],
+                    buildingName=data['building_name']
+                )
+                data['room'] = room
+            except Room.DoesNotExist:
+                raise serializers.ValidationError({
+                    'room_number': f"Room {data['room_number']} not found in {data['building_name']}"
+                })
+            except Room.MultipleObjectsReturned:
+                raise serializers.ValidationError({
+                    'room_number': f"Multiple rooms found with number {data['room_number']} in {data['building_name']}"
+                })
+        elif 'room_number' in data:
+            # Only room number provided, try to find it
+            try:
+                room = Room.objects.get(roomNumber=data['room_number'])
+                data['room'] = room
+            except Room.DoesNotExist:
+                raise serializers.ValidationError({
+                    'room_number': f"Room {data['room_number']} not found"
+                })
+            except Room.MultipleObjectsReturned:
+                rooms = Room.objects.filter(roomNumber=data['room_number'])
+                buildings = list(rooms.values_list('buildingName', flat=True))
+                raise serializers.ValidationError({
+                    'room_number': f"Multiple rooms found with number {data['room_number']}. Please specify building. Available in: {', '.join(buildings)}"
+                })
         
-        # Exclude current booking if updating
-        if self.instance:
-            conflicting_bookings = conflicting_bookings.exclude(id=self.instance.id)
+        # Remove the temporary fields
+        data.pop('room_number', None)
+        data.pop('building_name', None)
         
-        if conflicting_bookings.exists():
-            raise serializers.ValidationError(
-                "This time slot conflicts with an existing booking."
+        # Validate booking doesn't conflict with existing bookings
+        room = data.get('room')
+        booking_date = data.get('booking_date')
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        
+        if room and booking_date and start_time and end_time:
+            # Check for time conflicts
+            conflicting_bookings = Booking.objects.filter(
+                room=room,
+                booking_date=booking_date,
+                status__in=['pending', 'confirmed']
+            ).filter(
+                models.Q(start_time__lt=end_time) & models.Q(end_time__gt=start_time)
             )
+            
+            # Exclude current booking if updating
+            if self.instance:
+                conflicting_bookings = conflicting_bookings.exclude(id=self.instance.id)
+            
+            if conflicting_bookings.exists():
+                conflicting = conflicting_bookings.first()
+                raise serializers.ValidationError({
+                    'non_field_errors': [f"This time slot conflicts with an existing booking: {conflicting.start_time}-{conflicting.end_time}"]
+                })
         
         return data
 
