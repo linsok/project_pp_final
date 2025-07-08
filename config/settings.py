@@ -43,9 +43,6 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'dj_rest_auth.registration',
     'accounts',
     'corsheaders',
     'django_rest_passwordreset',
@@ -83,6 +80,10 @@ DJANGO_REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'dj_rest_auth.registration.serializers.RegisterSerializer',
 }
 
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'accounts.custom_serializers.CustomUserDetailsSerializer',
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -92,31 +93,9 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-# Google OAuth settings
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
-
-# Additional socialaccount settings for Google OAuth
-SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-SOCIALACCOUNT_LOGIN_ON_GET = True
-
-# Custom redirect URLs after OAuth success
+# Custom redirect URLs
 LOGIN_REDIRECT_URL = '/frontend/home.html'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/frontend/index.html'
-SOCIALACCOUNT_LOGIN_ON_GET = True
-
-# Custom adapters for debugging (temporarily disabled)
-# SOCIALACCOUNT_ADAPTER = 'accounts.adapters.DebugSocialAccountAdapter'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

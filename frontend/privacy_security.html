@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,11 +19,37 @@
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo">
-                    <i class="fas fa-university"></i>
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
                 </div>
                 <div>
                     <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
                     <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <!-- Profile Section Header -->
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Luffy</span>
+                <span id="profileIconContainer">
+                    <i class="fas fa-user-circle profile-icon" id="profileIcon"></i>
+                </span>
+                <div class="profile-dropdown-menu" id="profileDropdown">
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-briefcase"></i> Your account</span>
+                        <a href="setting.html"><i class="fas fa-cog dropdown-settings"></i></a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar-container" style="position: relative; width: 96px; height: 96px;">
+                            <img src="default.png" class="user-avatar" id="profileImg" alt="Profile Image" style="width: 96px; height: 96px; border-radius: 50%;" />
+                            <input type="file" id="profileImgInput" style="display:none;" accept="image/*" />
+                            <span id="editPhoto" style="position:absolute;top:35px;left:35px;display:none;cursor:pointer;">
+                                <i class="fas fa-camera"></i>
+                            </span>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name-dropdown">Your name here</div>
+                            <div class="user-email">your@remail.com</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -34,15 +60,15 @@
         <div class="nav-content">
             <button class="sidebar-toggle" id="sidebarToggle">
                 <i class="fas fa-bars"></i>
-                <ul class="dropdown-menu" id="dropdownMenu">
-                    <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
-                    <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
-                    <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
-                    <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
-                    <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
-                    <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
-                </ul>
             </button>
+            <ul class="dropdown-menu" id="dropdownMenu">
+                <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
+                <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
+                <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
+                <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
+                <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
+                <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
+            </ul>
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="home.html"><i class="fas fa-home"></i> Home</a>
@@ -58,33 +84,53 @@
     </nav>
 
    <main>
-       <div class="settings-container settings-subsection" id="privacySecuritySection" style="margin-top: 45px;">
+       <div class="settings-container settings-subsection" id="privacySecuritySection">
             <h2 class="subsection-header" id="backToSettingsFromPrivacy">
-                <i class="fas fa-chevron-left back-button" id="backButton"><a href="setting.html" style="text-decoration: none; color:black;">&nbsp;Privacy and Setting</a></i>
+                <i class="fas fa-chevron-left back-button" id="backArrow"></i> Privacy and Setting
             </h2>
+            
             <div class="privacy-security-item">
-                <span class="privacy-security-item-label">Email</span>
-                <span class="privacy-security-item-value" id="emailValue">myname@gmail.com</span>
-                <input type="email" class="privacy-security-item-input" id="emailInput" value="myname@gmail.com">
-                <button class="save-btn" id="saveEmail">Save</button>
+                <div class="privacy-security-field">
+                    <span class="privacy-security-item-label">Email</span>
+                    <span class="privacy-security-item-value" id="emailValue">Loading...</span>
+                </div>
+                <div class="privacy-security-edit">
+                    <input type="email" class="privacy-security-item-input" id="emailInput">
+                    <button class="save-btn" id="saveEmail">Save</button>
+                </div>
             </div>
+            
             <div class="privacy-security-item">
-                <span class="privacy-security-item-label">Phone number</span>
-                <span class="privacy-security-item-value" id="phoneValue">+855123456789</span>
-                <input type="tel" class="privacy-security-item-input" id="phoneInput" value="+855123456789">
-                <button class="save-btn" id="savePhone">Save</button>
+                <div class="privacy-security-field">
+                    <span class="privacy-security-item-label">Phone number</span>
+                    <span class="privacy-security-item-value" id="phoneValue">Loading...</span>
+                </div>
+                <div class="privacy-security-edit">
+                    <input type="tel" class="privacy-security-item-input" id="phoneInput">
+                    <button class="save-btn" id="savePhone">Save</button>
+                </div>
             </div>
+            
             <div class="privacy-security-item">
-                <span class="privacy-security-item-label">Password</span>
-                <span class="privacy-security-item-value" id="passwordValue">••••••••</span>
-                <input type="password" class="privacy-security-item-input" id="passwordInput" placeholder="Enter new password">
-                <button class="save-btn" id="savePassword">Save</button>
+                <div class="privacy-security-field">
+                    <span class="privacy-security-item-label">Password</span>
+                    <span class="privacy-security-item-value" id="passwordValue">•••••••</span>
+                </div>
+                <div class="privacy-security-edit">
+                    <input type="password" class="privacy-security-item-input" id="passwordInput" placeholder="Enter new password">
+                    <button class="save-btn" id="savePassword">Save</button>
+                </div>
             </div>
+            
             <div class="privacy-security-item">
-                <span class="privacy-security-item-label">Name</span>
-                <span class="privacy-security-item-value" id="nameValue">Luffy Sen</span>
-                <input type="text" class="privacy-security-item-input" id="nameInput" value="Luffy Sen">
-                <button class="save-btn" id="saveName">Save</button>
+                <div class="privacy-security-field">
+                    <span class="privacy-security-item-label">Name</span>
+                    <span class="privacy-security-item-value" id="nameValue">Loading...</span>
+                </div>
+                <div class="privacy-security-edit">
+                    <input type="text" class="privacy-security-item-input" id="nameInput">
+                    <button class="save-btn" id="saveName">Save</button>
+                </div>
             </div>
         </div>
     </main>
@@ -101,7 +147,7 @@
         <div class="footer-right">
             <div class="footer-section">
                 <h4>Address</h4>
-                <p >
+                <p>
                     Building A, Room #A112, Research Office,<br>
                     Royal University of Phnom Penh (RUPP),<br>
                     Russian Federation Boulevard, Khan Toul Kork,<br>
@@ -124,8 +170,7 @@
     </div>
 </footer>
     
-
-     <script src="js/privacy_security.js"></script>
-
+    <script src="js/privacy_security.js"></script>
+    <script src="js/Account_icon.js"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
-
-        // Toggle dropdown menu
+// Toggle dropdown menu
         document.getElementById('sidebarToggle').addEventListener('click', function(e) {
             e.stopPropagation(); // Prevent the click from bubbling up
             document.getElementById('dropdownMenu').classList.toggle('active');
@@ -21,31 +20,106 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.location.pathname.includes("book_room.html")) {
         const params = new URLSearchParams(window.location.search);
 
-        // Room Number
-        if (params.has("roomNumber")) {
-            document.getElementById("roomNumber").value = params.get("roomNumber");
+        // Handle corrected room information from enhanced search
+        if (params.has("roomId") && params.has("roomType")) {
+            // This is from the enhanced search with corrected information
+            const roomId = params.get("roomId");
+            const roomNumber = params.get("roomNumber");
+            const roomType = params.get("roomType");
+            const capacity = params.get("capacity");
+            const date = params.get("date");
+            const startTime = params.get("startTime");
+            const endTime = params.get("endTime");
+
+            // Auto-fill room number
+            if (roomNumber) {
+                document.getElementById("roomNumber").value = roomNumber;
+            }
+
+            // Auto-select capacity based on actual room capacity
+            if (capacity) {
+                const capacitySelect = document.getElementById("capacity");
+                let capacityRange = "";
+                
+                const cap = parseInt(capacity);
+                if (cap <= 10) capacityRange = "1-10 people";
+                else if (cap <= 25) capacityRange = "11-25 people";
+                else if (cap <= 50) capacityRange = "26-50 people";
+                else if (cap <= 100) capacityRange = "51-100 people";
+                else capacityRange = "100+ people";
+                
+                for (let option of capacitySelect.options) {
+                    if (option.text === capacityRange) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+
+            // Auto-select building based on room type and number
+            if (roomNumber) {
+                const buildingSelect = document.getElementById("building");
+                let buildingName = "";
+                
+                // Simple mapping - in a real app, this would come from the API
+                if (roomNumber.startsWith("A")) buildingName = "Building A";
+                else if (roomNumber.startsWith("B")) buildingName = "Building B";
+                else if (roomNumber.startsWith("C")) buildingName = "Building C";
+                else if (roomNumber.startsWith("T")) buildingName = "STEM";
+                else if (roomNumber.startsWith("L")) buildingName = "Library";
+                
+                for (let option of buildingSelect.options) {
+                    if (option.value === buildingName) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }
+
+            // Auto-fill date
+            if (date) {
+                const [year, month, day] = date.split("-");
+                document.getElementById("year").value = year;
+                document.getElementById("month").value = parseInt(month) - 1; // Months are 0-indexed
+                document.getElementById("day").value = parseInt(day);
+            }
+
+            // Auto-fill time
+            if (startTime) {
+                document.getElementById("timeFrom").value = startTime;
+            }
+            if (endTime) {
+                document.getElementById("timeTo").value = endTime;
+            }
         }
+        // Handle legacy parameters (for backward compatibility)
+        else {
+            // Room Number
+            if (params.has("roomNumber")) {
+                document.getElementById("roomNumber").value = params.get("roomNumber");
+            }
 
-        // Capacity
-        if (params.has("capacity")) {
-            document.getElementById("capacity").value = params.get("capacity");
-        }
+            // Capacity
+            if (params.has("capacity")) {
+                document.getElementById("capacity").value = params.get("capacity");
+            }
 
-        // Date (split into month/day/year)
-        if (params.has("date")) {
-            const dateStr = params.get("date"); // Format: YYYY-MM-DD
-            const [year, month, day] = dateStr.split("-");
+            // Date (split into month/day/year)
+            if (params.has("date")) {
+                const dateStr = params.get("date"); // Format: YYYY-MM-DD
+                const [year, month, day] = dateStr.split("-");
 
-            document.getElementById("year").value = year;
-            document.getElementById("month").value = parseInt(month) - 1; // Months are 0-indexed
-            document.getElementById("day").value = parseInt(day);
-        }
+                document.getElementById("year").value = year;
+                document.getElementById("month").value = parseInt(month) - 1; // Months are 0-indexed
+                document.getElementById("day").value = parseInt(day);
+            }
 
-        // Time (split into from/to — same value for both by default)
-        if (params.has("time")) {
-            // Update these IDs if you rename inputs as I suggested earlier
-            document.getElementById("timeFrom").value = params.get("time");
-            document.getElementById("timeTo").value = params.get("time");
+            // Time (split into from/to — same value for both by default)
+            if (params.has("time")) {
+                // Update these IDs if you rename inputs as I suggested earlier
+                document.getElementById("timeFrom").value = params.get("time");
+                document.getElementById("timeTo").value = params.get("time");
+            }
         }
     }
 });

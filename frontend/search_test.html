@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Test</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .form-control {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .close-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Test</h1>
+    
+    <form>
+        <select id="roomType" class="form-control">
+            <option value="">Select Room Type</option>
+            <option>Lecture Hall</option>
+            <option>Conference Room</option>
+            <option>Meeting Room</option>
+            <option>Study Room</option>
+        </select>
+        
+        <select id="roomNumber" class="form-control">
+            <option value="">Select Room Number</option>
+            <option>A101</option>
+            <option>A201</option>
+            <option>B101</option>
+        </select>
+        
+        <input type="date" id="date" class="form-control">
+        <input type="time" id="from_time" class="form-control">
+        <input type="time" id="to_time" class="form-control">
+        
+        <button type="button" class="search-btn" id="searchBtn">Search</button>
+    </form>
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Search Results</h3>
+            <button class="close-btn" id="closeBtn">×</button>
+            <div id="bookingInfo"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('searchBtn').addEventListener('click', async function() {
+            console.log('Search button clicked');
+            
+            const modal = document.getElementById('bookingModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const bookingInfo = document.getElementById('bookingInfo');
+            
+            // Show modal
+            modal.classList.add('show');
+            modalTitle.textContent = 'Searching...';
+            bookingInfo.innerHTML = 'Loading...';
+            
+            try {
+                // Get form values
+                const roomType = document.getElementById('roomType').value;
+                const roomNumber = document.getElementById('roomNumber').value;
+                const date = document.getElementById('date').value;
+                const fromTime = document.getElementById('from_time').value;
+                const toTime = document.getElementById('to_time').value;
+                
+                // Build search parameters
+                const searchParams = new URLSearchParams();
+                if (roomType) searchParams.append('room_type', roomType);
+                if (roomNumber) searchParams.append('room_number', roomNumber);
+                if (date) searchParams.append('date', date);
+                if (fromTime) searchParams.append('start_time', fromTime);
+                if (toTime) searchParams.append('end_time', toTime);
+                
+                const apiUrl = `http://localhost:8000/api/rooms/search/?${searchParams.toString()}`;
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                modalTitle.textContent = 'Search Results';
+                bookingInfo.innerHTML = `
+                    <p>Found ${data.length} rooms</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                modalTitle.textContent = 'Error';
+                bookingInfo.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+        
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            console.log('Close button clicked');
+            document.getElementById('bookingModal').classList.remove('show');
+        });
+    </script>
+</body>
+</html>

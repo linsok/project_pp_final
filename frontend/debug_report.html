@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Report Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #log { background: #f0f0f0; padding: 10px; max-height: 400px; overflow-y: auto; }
+        button { margin: 5px; padding: 10px; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Debug Report Issue</h1>
+    
+    <div>
+        <button onclick="testStep1()">1. Test Login</button>
+        <button onclick="testStep2()">2. Test Auth Check</button>
+        <button onclick="testStep3()">3. Test Report Submit</button>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+    </div>
+    
+    <div>
+        <textarea id="reportText" placeholder="Enter test report description here...">Test report from debug page</textarea>
+    </div>
+    
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message) {
+            log.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            addLog('Storage cleared');
+        }
+        
+        async function testStep1() {
+            addLog('=== Testing Login ===');
+            try {
+                const response = await fetch('http://localhost:8000/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test.user@gmail.com',
+                        password: 'testpass123'
+                    })
+                });
+                
+                addLog(`Login response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`Login response data: ${JSON.stringify(data)}`);
+                    
+                    if (data.key) {
+                        localStorage.setItem('authToken', data.key);
+                        addLog(`Token stored: ${data.key.substring(0, 10)}...`);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    addLog(`Login failed: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                addLog(`Login error: ${error.message}`);
+            }
+        }
+        
+        async function testStep2() {
+            addLog('=== Testing Auth Check ===');
+            try {
+                const token = localStorage.getItem('authToken');
+                addLog(`Token from storage: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+                
+                if (!token) {
+                    addLog('No token found - run step 1 first');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8000/auth/user/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+                
+                addLog(`Auth check response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`Auth check response data: ${JSON.stringify(data)}`);
+                } else {
+                    const errorData = await response.json();
+                    addLog(`Auth check failed: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                addLog(`Auth check error: ${error.message}`);
+            }
+        }
+        
+        async function testStep3() {
+            addLog('=== Testing Report Submit ===');
+            try {
+                const token = localStorage.getItem('authToken');
+                addLog(`Token from storage: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+                
+                if (!token) {
+                    addLog('No token found - run step 1 first');
+                    return;
+                }
+                
+                const description = document.getElementById('reportText').value;
+                addLog(`Report description: ${description}`);
+                
+                const response = await fetch('http://localhost:8000/api/reports/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify({
+                        description: description
+                    })
+                });
+                
+                addLog(`Report submit response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`Report submit response data: ${JSON.stringify(data)}`);
+                } else {
+                    const errorData = await response.json();
+                    addLog(`Report submit failed: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                addLog(`Report submit error: ${error.message}`);
+            }
+        }
+        
+        // Auto-run initial check
+        window.onload = function() {
+            addLog('Page loaded');
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                addLog(`Existing token found: ${token.substring(0, 10)}...`);
+            } else {
+                addLog('No existing token found');
+            }
+        };
+    </script>
+</body>
+</html>

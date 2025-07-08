@@ -58,6 +58,10 @@ class Room(models.Model):
 
     def __str__(self):
         return f"{self.roomNumber} - {self.buildingName} ({self.roomType})"
+    
+    def get_amenities_list(self):
+        """Return amenities as a list - placeholder for now"""
+        return []
 
 
 class PasswordResetCode(models.Model):
@@ -93,3 +97,46 @@ class PasswordResetCode(models.Model):
     
     def __str__(self):
         return f"Password reset code for {self.user.email}"
+
+
+class Booking(models.Model):
+    BOOKING_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
+        ('completed', 'Completed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    booking_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    purpose = models.CharField(max_length=200, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=BOOKING_STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['room', 'booking_date', 'start_time', 'end_time']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.room.roomNumber} - {self.booking_date} ({self.start_time}-{self.end_time})"
+    
+    def is_conflicting_with(self, booking_date, start_time, end_time):
+        """Check if this booking conflicts with the given time slot"""
+        if self.booking_date != booking_date:
+            return False
+        
+        # Check time overlap
+        return not (end_time <= self.start_time or start_time >= self.end_time)
+
+
+class ReportProblem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report by {self.user.username if self.user else 'Anonymous'} at {self.created_at}"

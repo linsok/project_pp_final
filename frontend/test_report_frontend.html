@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Report Frontend</title>
+</head>
+<body>
+    <h1>Test Report Frontend</h1>
+    <div id="status"></div>
+    <button onclick="testLogin()">1. Test Login</button>
+    <button onclick="testAuthCheck()">2. Test Auth Check</button>
+    <button onclick="testReportSubmit()">3. Test Report Submit</button>
+    <button onclick="clearToken()">Clear Token</button>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        function log(message) {
+            statusDiv.innerHTML += message + '<br>';
+            console.log(message);
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+            statusDiv.innerHTML = 'Token cleared<br>';
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:8000/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test.user@gmail.com',
+                        password: 'testpass123'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Login Status: ${response.status}`);
+                log(`Login Response: ${JSON.stringify(data)}`);
+                
+                if (data.key) {
+                    localStorage.setItem('authToken', data.key);
+                    log('Token stored in localStorage');
+                }
+            } catch (error) {
+                log(`Login Error: ${error.message}`);
+            }
+        }
+        
+        async function testAuthCheck() {
+            try {
+                const token = localStorage.getItem('authToken');
+                log(`Token from localStorage: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+                
+                if (!token) {
+                    log('No token found - please login first');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8000/auth/user/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                log(`Auth Check Status: ${response.status}`);
+                log(`Auth Check Response: ${JSON.stringify(data)}`);
+                
+            } catch (error) {
+                log(`Auth Check Error: ${error.message}`);
+            }
+        }
+        
+        async function testReportSubmit() {
+            try {
+                const token = localStorage.getItem('authToken');
+                log(`Token from localStorage: ${token ? token.substring(0, 10) + '...' : 'null'}`);
+                
+                if (!token) {
+                    log('No token found - please login first');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8000/api/reports/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify({
+                        description: 'Test report from frontend'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Report Submit Status: ${response.status}`);
+                log(`Report Submit Response: ${JSON.stringify(data)}`);
+                
+            } catch (error) {
+                log(`Report Submit Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

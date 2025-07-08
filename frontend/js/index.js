@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
-    fetch('http://127.0.0.1:8000/auth/login/', {
+    fetch('http://localhost:8000/auth/login/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -246,30 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // --- Google Sign-In callback (must be global!) ---
-  window.handleCredentialResponse = function(response) {
-    fetch('http://localhost:8000/auth/social/login/', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        provider: 'google',
-        id_token: response.credential
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.key) {
-        localStorage.setItem('authToken', data.key);
-        window.location.href = "home.html";
-        // Optionally, redirect or update your UI here
-      } else {
-        alert('Google login failed: ' + JSON.stringify(data));
-      }
-    })
-    .catch(error => {
-      alert('Google login error: ' + error);
-    });
-  };
+
 
   // --- Real-time validation for signup fields ---
   const fields = [

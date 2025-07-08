@@ -1,16 +1,12 @@
 from rest_framework import generics, permissions
-from .models import Profile, PasswordResetCode
-from .serializers import ProfileSerializer
+from .models import Profile, PasswordResetCode, Room, Booking, ReportProblem
+from .serializers import ProfileSerializer, RoomSerializer, BookingSerializer, ReportProblemSerializer
 from django.http import JsonResponse
-from .models import Room
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.models import SocialAccount
+
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from rest_framework.authtoken.models import Token
@@ -19,6 +15,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import random
 import string
+from django.db.models import Q
+from datetime import datetime, date, time as datetime_time
 
 User = get_user_model()
 
@@ -137,15 +135,7 @@ def reset_password_with_code(request):
     except User.DoesNotExist:
         return Response({'error': 'Invalid email'}, status=400)
 
-class GoogleLogin(SocialLoginView):
-    """
-    Google OAuth2 login view that returns JSON response
-    """
-    authentication_classes = []
-    permission_classes = [AllowAny]
-    adapter_class = GoogleOAuth2Adapter
-    callback_url = 'http://localhost:8000/accounts/google/login/callback/'
-    client_class = OAuth2Client
+
 
 class ProfileDetail(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
@@ -206,72 +196,138 @@ def debug_profile(request):
     else:
         return Response({'error': 'Not authenticated'}, status=401)
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def google_login_url(request):
-    """
-    Return Google OAuth login URL
-    """
-    return Response({
-        'login_url': '/accounts/google/login/'
-    })
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def google_oauth_callback(request):
-    """
-    Handle Google OAuth callback
-    """
-    # Get the user from the request (if authenticated)
-    if request.user.is_authenticated:
-        # Create or get auth token
-        token, created = Token.objects.get_or_create(user=request.user)
-        
-        # Return JSON response with token
-        return Response({
-            'status': 'success',
-            'message': 'Google OAuth completed successfully',
-            'token': token.key,
-            'user': {
-                'id': request.user.id,
-                'email': request.user.email,
-                'username': request.user.username,
-                'first_name': request.user.first_name,
-                'last_name': request.user.last_name,
-            }
-        })
-    else:
-        return Response({
-            'status': 'error',
-            'message': 'Authentication failed'
-        }, status=400)
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def google_login_success(request):
-    """
-    Handle successful Google OAuth login
-    This can be called from your frontend after OAuth completes
-    """
-    if request.user.is_authenticated:
-        # Create or get auth token
-        token, created = Token.objects.get_or_create(user=request.user)
+class RoomSearchView(generics.ListAPIView):
+    """API endpoint for searching available rooms"""
+    serializer_class = RoomSerializer
+    permission_classes = [permissions.AllowAny]  # Allow public search
+    
+    def get_queryset(self):
+        queryset = Room.objects.all()  # Remove is_active filter for now
         
-        # Return JSON response with user data and token
+        # Get search parameters
+        room_type = self.request.query_params.get('room_type')
+        room_number = self.request.query_params.get('room_number')
+        building = self.request.query_params.get('building')
+        min_capacity = self.request.query_params.get('min_capacity')
+        max_capacity = self.request.query_params.get('max_capacity')
+        search_date = self.request.query_params.get('date')
+        start_time = self.request.query_params.get('start_time')
+        end_time = self.request.query_params.get('end_time')
+        
+        # Apply filters
+        if room_type:
+            queryset = queryset.filter(roomType__icontains=room_type)
+        
+        if room_number:
+            queryset = queryset.filter(roomNumber__icontains=room_number)
+        
+        if building:
+            queryset = queryset.filter(buildingName__icontains=building)
+        
+        if min_capacity:
+            try:
+                queryset = queryset.filter(capacity__gte=int(min_capacity))
+            except ValueError:
+                pass
+        
+        if max_capacity:
+            try:
+                queryset = queryset.filter(capacity__lte=int(max_capacity))
+            except ValueError:
+                pass
+        
+        # IMPORTANT: Availability checking requires room_number, date, and time
+        # If any of these are missing, we cannot determine availability
+        if all([room_number, search_date, start_time, end_time]):
+            try:
+                search_date = datetime.strptime(search_date, '%Y-%m-%d').date()
+                start_time = datetime.strptime(start_time, '%H:%M').time()
+                end_time = datetime.strptime(end_time, '%H:%M').time()
+                
+                # Get rooms that don't have conflicting bookings
+                conflicting_rooms = Booking.objects.filter(
+                    booking_date=search_date,
+                    status__in=['pending', 'confirmed']
+                ).filter(
+                    Q(start_time__lt=end_time) & Q(end_time__gt=start_time)
+                ).values_list('room_id', flat=True)
+                
+                queryset = queryset.exclude(id__in=conflicting_rooms)
+                
+            except (ValueError, TypeError):
+                pass
+        
+        return queryset.order_by('buildingName', 'roomNumber')
+
+
+class RoomDetailView(generics.RetrieveAPIView):
+    """API endpoint for getting room details"""
+    serializer_class = RoomSerializer
+    queryset = Room.objects.all()  # Remove is_active filter for now
+    permission_classes = [permissions.AllowAny]
+
+
+class BookingCreateView(generics.CreateAPIView):
+    """API endpoint for creating bookings"""
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class UserBookingsView(generics.ListAPIView):
+    """API endpoint for getting user's bookings"""
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+class RoomTypesView(generics.ListAPIView):
+    """API endpoint for getting available room types"""
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        room_types = Room.objects.filter(is_active=True).values_list('roomType', flat=True).distinct()
+        buildings = Room.objects.filter(is_active=True).values_list('buildingName', flat=True).distinct()
+        
         return Response({
-            'status': 'success',
-            'message': 'Login successful',
-            'token': token.key,
-            'user': {
-                'id': request.user.id,
-                'email': request.user.email,
-                'username': request.user.username,
-                'first_name': request.user.first_name,
-                'last_name': request.user.last_name,
-            }
+            'room_types': list(room_types),
+            'buildings': list(filter(None, buildings)),
+            'capacity_ranges': [
+                {'label': '1-10 people', 'min': 1, 'max': 10},
+                {'label': '11-25 people', 'min': 11, 'max': 25},
+                {'label': '26-50 people', 'min': 26, 'max': 50},
+                {'label': '51-100 people', 'min': 51, 'max': 100},
+                {'label': '100+ people', 'min': 100, 'max': 1000},
+            ]
         })
-    else:
-        return Response({
-            'status': 'error',
-            'message': 'Not authenticated'
-        }, status=401)
+
+
+class ReportProblemCreateView(generics.CreateAPIView):
+    queryset = ReportProblem.objects.all()
+    serializer_class = ReportProblemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Problem report submitted successfully',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ReportProblemListView(generics.ListAPIView):
+    queryset = ReportProblem.objects.all().order_by('-created_at')
+    serializer_class = ReportProblemSerializer
+    permission_classes = [permissions.IsAdminUser]  # Only admin can view all reports
+
+def test_api(request):
+    """Simple test endpoint"""
+    return JsonResponse({"status": "API is working", "method": request.method})

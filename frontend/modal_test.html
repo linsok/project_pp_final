@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modal Test</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <button id="testBtn">Test Modal</button>
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Test Modal</h3>
+            <div id="bookingInfo">This is a test modal</div>
+            <button class="close-btn">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('testBtn').addEventListener('click', function() {
+            console.log('Test button clicked');
+            const modal = document.getElementById('bookingModal');
+            modal.classList.add('show');
+        });
+        
+        document.querySelector('.close-btn').addEventListener('click', function() {
+            console.log('Close button clicked');
+            const modal = document.getElementById('bookingModal');
+            modal.classList.remove('show');
+        });
+    </script>
+</body>
+</html>

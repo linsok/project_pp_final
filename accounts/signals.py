@@ -7,8 +7,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-from allauth.socialaccount.signals import pre_social_login, social_account_added
-from allauth.socialaccount.models import SocialAccount
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -55,47 +54,3 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     except Exception as e:
         print(f"Error sending password reset email: {e}")
 
-@receiver(pre_social_login)
-def pre_social_login_handler(sender, request, sociallogin, **kwargs):
-    """Handle pre-social login to check for existing accounts"""
-    if sociallogin.account.provider == 'google':
-        try:
-            # Check if user with this email already exists
-            email = sociallogin.account.extra_data.get('email')
-            if email:
-                try:
-                    existing_user = User.objects.get(email=email)
-                    # Connect this social account to existing user
-                    sociallogin.connect(request, existing_user)
-                    print(f"Connected Google account to existing user: {existing_user.email}")
-                except User.DoesNotExist:
-                    # User doesn't exist, will be created by allauth
-                    print(f"New user will be created for: {email}")
-        except Exception as e:
-            print(f"Error in pre_social_login_handler: {e}")
-
-@receiver(social_account_added)
-def social_account_added_handler(sender, request, sociallogin, **kwargs):
-    """Handle when a social account is added"""
-    if sociallogin.account.provider == 'google':
-        try:
-            user = sociallogin.user
-            
-            # Ensure user has a profile
-            profile, created = Profile.objects.get_or_create(user=user)
-            
-            # Update user information from Google
-            extra_data = sociallogin.account.extra_data
-            if extra_data.get('given_name') and not user.first_name:
-                user.first_name = extra_data.get('given_name')
-            if extra_data.get('family_name') and not user.last_name:
-                user.last_name = extra_data.get('family_name')
-            if extra_data.get('email') and not user.email:
-                user.email = extra_data.get('email')
-            
-            user.save()
-            
-            print(f"Google OAuth user profile created/updated for: {user.email}")
-            
-        except Exception as e:
-            print(f"Error in social_account_added_handler: {e}")
