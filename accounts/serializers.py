@@ -86,9 +86,10 @@ class BookingSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Booking
-        fields = ['id', 'room', 'room_details', 'user_name', 'booking_date', 
+        fields = ['id', 'room_details', 'user_name', 'booking_date', 
                  'start_time', 'end_time', 'purpose', 'status', 'created_at',
                  'room_number', 'building_name']
+        read_only_fields = ['id', 'user_name', 'status', 'created_at']
         
     def validate(self, data):
         """Validate booking and find room by number and building"""
@@ -156,6 +157,13 @@ class BookingSerializer(serializers.ModelSerializer):
                 })
         
         return data
+    
+    def create(self, validated_data):
+        """Create booking with user from request context"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
 
 
 class ReportProblemSerializer(serializers.ModelSerializer):

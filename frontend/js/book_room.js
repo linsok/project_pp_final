@@ -319,36 +319,112 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Show confirmation dialog
-        const confirmBooking = confirm(`📝 Please confirm your booking details:
-
-Name: ${formData.firstName} ${formData.surname}
-Email: ${formData.email}
-Date: ${bookingDate}
-Time: ${formData.timeFrom} - ${formData.timeTo}
-Building: ${formData.building}
-Room: ${formData.roomNumber}
-Purpose: ${formData.meetingAgenda || 'Not specified'}
-
-Click OK to confirm or Cancel to go back and edit.`);
-        
-        if (!confirmBooking) {
-            return;
-        }
-
-        // Prepare booking data for API
+        // Prepare booking data for confirmation
         const bookingData = {
             room_number: formData.roomNumber,
             building_name: formData.building,
             booking_date: bookingDate,
             start_time: formData.timeFrom,
             end_time: formData.timeTo,
-            purpose: formData.meetingAgenda || `${formData.role} meeting`
+            purpose: formData.meetingAgenda || `${formData.role} meeting`,
+            // Store form data for confirmation display
+            firstName: formData.firstName,
+            surname: formData.surname,
+            email: formData.email
         };
 
-        // Submit booking to API
-        submitBooking(bookingData, token);
+        // Show confirmation modal instead of alert
+        showConfirmationModal(bookingData, token);
     });
+
+    // Global variables to store booking data
+    let currentBookingData = null;
+    let currentAuthToken = null;
+
+    // Show confirmation modal
+    function showConfirmationModal(bookingData, token) {
+        currentBookingData = bookingData;
+        currentAuthToken = token;
+
+        // Populate confirmation modal
+        document.getElementById('confirmName').textContent = `${bookingData.firstName} ${bookingData.surname}`;
+        document.getElementById('confirmEmail').textContent = bookingData.email;
+        document.getElementById('confirmDate').textContent = bookingData.booking_date;
+        document.getElementById('confirmTime').textContent = `${bookingData.start_time} - ${bookingData.end_time}`;
+        document.getElementById('confirmBuilding').textContent = bookingData.building_name;
+        document.getElementById('confirmRoom').textContent = bookingData.room_number;
+        document.getElementById('confirmPurpose').textContent = bookingData.purpose;
+
+        // Show modal
+        const modal = document.getElementById('bookingConfirmationModal');
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    // Close confirmation modal
+    window.closeConfirmationModal = function() {
+        const modal = document.getElementById('bookingConfirmationModal');
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        currentBookingData = null;
+        currentAuthToken = null;
+    };
+
+    // Confirm booking (called when OK button is clicked)
+    window.confirmBooking = function() {
+        if (currentBookingData && currentAuthToken) {
+            closeConfirmationModal();
+            
+            // Remove the extra fields that shouldn't be sent to API
+            const apiBookingData = {
+                room_number: currentBookingData.room_number,
+                building_name: currentBookingData.building_name,
+                booking_date: currentBookingData.booking_date,
+                start_time: currentBookingData.start_time,
+                end_time: currentBookingData.end_time,
+                purpose: currentBookingData.purpose
+            };
+            
+            submitBooking(apiBookingData, currentAuthToken);
+        }
+    };
+
+    // Show success modal
+    function showSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    // Close success modal
+    window.closeSuccessModal = function() {
+        const modal = document.getElementById('successModal');
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        
+        // Reset form
+        form.reset();
+    };
+
+    // View booking history
+    window.viewBookingHistory = function() {
+        window.location.href = "booking_history.html";
+    };
+
+    // Show error modal
+    function showErrorModal(message) {
+        document.getElementById('errorMessage').textContent = message;
+        const modal = document.getElementById('errorModal');
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    }
+
+    // Close error modal
+    window.closeErrorModal = function() {
+        const modal = document.getElementById('errorModal');
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    };
 
     async function submitBooking(bookingData, token) {
         try {
@@ -373,11 +449,10 @@ Click OK to confirm or Cancel to go back and edit.`);
             console.log('Booking response:', result);
 
             if (response.ok) {
-                showBookingConfirmation(result, bookingData);
-                form.reset(); // Clear the form
+                showSuccessModal();
             } else {
                 // Handle API errors
-                let errorMessage = "❌ Failed to book room. ";
+                let errorMessage = "Failed to book room. ";
                 
                 if (result.non_field_errors) {
                     errorMessage += result.non_field_errors.join(', ');
@@ -393,11 +468,11 @@ Click OK to confirm or Cancel to go back and edit.`);
                     errorMessage += "Please check your information and try again.";
                 }
                 
-                showErrorMessage(errorMessage);
+                showErrorModal(errorMessage);
             }
         } catch (error) {
             console.error('Booking error:', error);
-            showErrorMessage("Network error. Please check your connection and try again.");
+            showErrorModal("Network error. Please check your connection and try again.");
         } finally {
             // Restore button state
             const submitButton = document.querySelector('button[type="submit"]');
@@ -406,137 +481,15 @@ Click OK to confirm or Cancel to go back and edit.`);
         }
     }
 
-    // Function to show booking confirmation message
-    function showBookingConfirmation(bookingResult, bookingData) {
-        const overlay = document.createElement('div');
-        overlay.className = 'booking-message-overlay';
-        
-        const message = document.createElement('div');
-        message.className = 'booking-message success';
-        
-        // Format the booking details
-        const roomInfo = bookingResult.room_details ? 
-            `${bookingResult.room_details.roomNumber} in ${bookingResult.room_details.buildingName}` : 
-            `${bookingData.room_number} in ${bookingData.building_name}`;
-        
-        // Format date
-        const bookingDate = new Date(bookingData.booking_date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const modals = ['bookingConfirmationModal', 'successModal', 'errorModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (event.target === modal) {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
         });
-        
-        message.innerHTML = `
-            <div class="booking-message-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h3>Booking Confirmed!</h3>
-            <p>Your room has been successfully reserved. You will receive a confirmation email shortly.</p>
-            
-            <div class="booking-message-details">
-                <h4>Booking Details:</h4>
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Booking ID:</span>
-                    <span class="booking-detail-value">#${bookingResult.id}</span>
-                </div>
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Room:</span>
-                    <span class="booking-detail-value">${roomInfo}</span>
-                </div>
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Date:</span>
-                    <span class="booking-detail-value">${bookingDate}</span>
-                </div>
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Time:</span>
-                    <span class="booking-detail-value">${bookingData.start_time} - ${bookingData.end_time}</span>
-                </div>
-                ${bookingData.purpose ? `
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Purpose:</span>
-                    <span class="booking-detail-value">${bookingData.purpose}</span>
-                </div>
-                ` : ''}
-                <div class="booking-detail-item">
-                    <span class="booking-detail-label">Status:</span>
-                    <span class="booking-detail-value">Pending Confirmation</span>
-                </div>
-            </div>
-            
-            <div class="booking-message-actions">
-                <button class="booking-message-btn secondary" onclick="closeBookingMessage()">
-                    <i class="fas fa-check"></i> Done
-                </button>
-                <a href="booking_history.html" class="booking-message-btn primary">
-                    <i class="fas fa-history"></i> View My Bookings
-                </a>
-            </div>
-        `;
-        
-        document.body.appendChild(overlay);
-        document.body.appendChild(message);
-        
-        // Close on overlay click
-        overlay.addEventListener('click', closeBookingMessage);
-    }
-    
-    // Function to show error message
-    function showErrorMessage(errorText) {
-        const overlay = document.createElement('div');
-        overlay.className = 'booking-message-overlay';
-        
-        const message = document.createElement('div');
-        message.className = 'booking-message error';
-        
-        message.innerHTML = `
-            <div class="booking-message-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3>Booking Failed</h3>
-            <p>${errorText}</p>
-            
-            <div class="booking-message-actions">
-                <button class="booking-message-btn secondary" onclick="closeBookingMessage()">
-                    <i class="fas fa-times"></i> Close
-                </button>
-                <button class="booking-message-btn primary" onclick="closeBookingMessage()">
-                    <i class="fas fa-redo"></i> Try Again
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(overlay);
-        document.body.appendChild(message);
-        
-        // Close on overlay click
-        overlay.addEventListener('click', closeBookingMessage);
-    }
-    
-    // Function to close booking message
-    window.closeBookingMessage = function() {
-        const overlay = document.querySelector('.booking-message-overlay');
-        const message = document.querySelector('.booking-message');
-        
-        if (overlay && message) {
-            overlay.classList.add('fade-out');
-            message.classList.add('fade-out');
-            
-            setTimeout(() => {
-                if (overlay && overlay.parentNode) {
-                    overlay.parentNode.removeChild(overlay);
-                }
-                if (message && message.parentNode) {
-                    message.parentNode.removeChild(message);
-                }
-            }, 300);
-        }
-    };
-    
-    // Close message on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeBookingMessage();
-        }
     });
 });
