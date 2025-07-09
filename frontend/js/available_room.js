@@ -1,23 +1,21 @@
 // Toggle dropdown menu (Sidebar)
 document.getElementById('sidebarToggle').addEventListener('click', function(e) {
-    e.stopPropagation(); // Prevent the click from bubbling up
+    e.stopPropagation();
     document.getElementById('dropdownMenu').classList.toggle('active');
 });
 
-// Close dropdown when clicking anywhere else
 document.addEventListener('click', function() {
     document.getElementById('dropdownMenu').classList.remove('active');
 });
 
-// Prevent dropdown from closing when clicking inside it
 document.getElementById('dropdownMenu').addEventListener('click', function(e) {
     e.stopPropagation();
 });
 
-// Calendar Logic
+// Calendar and Room Availability Logic
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
-let selectedDate = new Date(); // Initially select today
+let selectedDate = new Date();
 
 const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -25,37 +23,124 @@ const monthNames = ["January", "February", "March", "April", "May", "June",
 
 const monthYearSpan = document.getElementById('monthYear');
 const calendarGrid = document.querySelector('.calendar-grid');
-const roomsTableBody = document.getElementById('roomsTableBody');
+const roomAvailabilityBody = document.getElementById('roomAvailabilityBody');
+const selectedDateText = document.getElementById('selectedDateText');
 
-// Sample room data
-const allRooms = [
-    {
-        date: new Date(2025, 5, 24), // June 24, 2025
-        building: 'A',
-        room: '101',
-        time: '09:00 AM - 10:00 AM',
-        status: 'Available'
-    },
-    {
-        date: new Date(2025, 5, 24),
-        building: 'B',
-        room: '202',
-        time: '01:00 PM - 02:00 PM',
-        status: 'Available'
-    },
-    {
-        date: new Date(2025, 5, 25),
-        building: 'C',
-        room: '303',
-        time: '10:00 AM - 11:00 AM',
-        status: 'Available'
-    }
+// Time slots from 7 AM to 6 PM
+const timeSlots = [
+    { start: '07:00', end: '08:00', display: '7:00 - 8:00' },
+    { start: '08:00', end: '09:00', display: '8:00 - 9:00' },
+    { start: '09:00', end: '10:00', display: '9:00 - 10:00' },
+    { start: '10:00', end: '11:00', display: '10:00 - 11:00' },
+    { start: '11:00', end: '12:00', display: '11:00 - 12:00' },
+    { start: '12:00', end: '13:00', display: '12:00 - 13:00' },
+    { start: '13:00', end: '14:00', display: '13:00 - 14:00' },
+    { start: '14:00', end: '15:00', display: '14:00 - 15:00' },
+    { start: '15:00', end: '16:00', display: '15:00 - 16:00' },
+    { start: '16:00', end: '17:00', display: '16:00 - 17:00' },
+    { start: '17:00', end: '18:00', display: '17:00 - 18:00' }
 ];
 
-function renderCalendar() {
-    calendarGrid.innerHTML = ''; // Clear previous days
+let allRooms = [];
+let roomBookings = [];
 
-    // Add day headers (S, M, T, W, T, F, S)
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    loadRoomsFromDatabase();
+    renderCalendar();
+    updateSelectedDateDisplay();
+});
+
+// Load rooms from the database
+async function loadRoomsFromDatabase() {
+    try {
+        const response = await fetch('http://localhost:8000/api/rooms/types/');
+        if (response.ok) {
+            const data = await response.json();
+            allRooms = data.rooms || [];
+            console.log('Loaded rooms:', allRooms);
+            await loadBookingsForDate(selectedDate);
+            renderRoomAvailabilityTable();
+        } else {
+            console.error('Failed to load rooms');
+            // Fallback to sample data
+            useFallbackRoomData();
+        }
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        useFallbackRoomData();
+    }
+}
+
+function useFallbackRoomData() {
+    allRooms = [
+        { id: 1, roomNumber: 'A101', buildingName: 'Building A', capacity: 30, roomType: 'Lecture Hall' },
+        { id: 2, roomNumber: 'A201', buildingName: 'Building A', capacity: 25, roomType: 'Meeting Room' },
+        { id: 3, roomNumber: 'A301', buildingName: 'Building A', capacity: 35, roomType: 'Lecture Hall' },
+        { id: 4, roomNumber: 'B101', buildingName: 'Building B', capacity: 40, roomType: 'Lecture Hall' },
+        { id: 5, roomNumber: 'B201', buildingName: 'Building B', capacity: 20, roomType: 'Meeting Room' },
+        { id: 6, roomNumber: 'B301', buildingName: 'Building B', capacity: 30, roomType: 'Meeting Room' },
+        { id: 7, roomNumber: 'C101', buildingName: 'Building C', capacity: 50, roomType: 'Conference Room' },
+        { id: 8, roomNumber: 'C201', buildingName: 'Building C', capacity: 45, roomType: 'Conference Room' },
+        { id: 9, roomNumber: 'T401', buildingName: 'STEM Building', capacity: 60, roomType: 'Lab' },
+        { id: 10, roomNumber: 'T301', buildingName: 'STEM Building', capacity: 55, roomType: 'Lab' },
+        { id: 11, roomNumber: 'L101', buildingName: 'Library', capacity: 15, roomType: 'Study Room' },
+        { id: 12, roomNumber: 'L201', buildingName: 'Library', capacity: 20, roomType: 'Study Room' },
+        { id: 13, roomNumber: '306', buildingName: 'Library', capacity: 12, roomType: 'Study Room' },
+        { id: 14, roomNumber: '205', buildingName: 'Building A', capacity: 25, roomType: 'Meeting Room' },
+        { id: 15, roomNumber: '107', buildingName: 'Building B', capacity: 18, roomType: 'Meeting Room' }
+    ];
+    renderRoomAvailabilityTable();
+}
+
+// Load bookings for a specific date
+async function loadBookingsForDate(date) {
+    try {
+        const dateStr = date.toISOString().split('T')[0];
+        // Note: This endpoint doesn't exist yet, but we'll prepare for it
+        // const response = await fetch(`http://localhost:8000/api/bookings/date/${dateStr}/`);
+        
+        // For now, use sample booking data
+        roomBookings = generateSampleBookings(date);
+    } catch (error) {
+        console.error('Error loading bookings:', error);
+        roomBookings = [];
+    }
+}
+
+// Generate sample bookings (replace with actual API call later)
+function generateSampleBookings(date) {
+    const bookings = [];
+    const today = new Date();
+    
+    // Only add bookings for today and future dates
+    if (date >= today.setHours(0, 0, 0, 0)) {
+        // Add some random bookings
+        if (Math.random() > 0.5) {
+            bookings.push({
+                room_id: allRooms[0]?.id,
+                start_time: '09:00',
+                end_time: '10:00',
+                status: 'confirmed'
+            });
+        }
+        if (Math.random() > 0.7) {
+            bookings.push({
+                room_id: allRooms[1]?.id,
+                start_time: '14:00',
+                end_time: '15:00',
+                status: 'confirmed'
+            });
+        }
+    }
+    
+    return bookings;
+}
+
+function renderCalendar() {
+    calendarGrid.innerHTML = '';
+
+    // Add day headers
     const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     dayHeaders.forEach(day => {
         const headerDiv = document.createElement('div');
@@ -64,12 +149,12 @@ function renderCalendar() {
         calendarGrid.appendChild(headerDiv);
     });
 
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); // 0 for Sunday, 1 for Monday...
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // Get last day of month
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     monthYearSpan.textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
-    // Add empty cells for days before the 1st of the month
+    // Add empty cells for days before the 1st
     for (let i = 0; i < firstDayOfMonth; i++) {
         const emptyCell = document.createElement('div');
         emptyCell.classList.add('day-cell', 'empty');
@@ -81,7 +166,6 @@ function renderCalendar() {
         const dayCell = document.createElement('div');
         dayCell.classList.add('day-cell');
         dayCell.textContent = day;
-        dayCell.dataset.day = day; // Store day in dataset
 
         const today = new Date();
         if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
@@ -92,21 +176,114 @@ function renderCalendar() {
             dayCell.classList.add('selected');
         }
 
-        dayCell.addEventListener('click', () => {
-            // Remove 'selected' from previously selected day
+        dayCell.addEventListener('click', async () => {
+            // Remove previous selection
             const prevSelected = document.querySelector('.day-cell.selected');
             if (prevSelected) {
                 prevSelected.classList.remove('selected');
             }
-            // Add 'selected' to the clicked day
+            
+            // Add selection to clicked day
             dayCell.classList.add('selected');
             selectedDate = new Date(currentYear, currentMonth, day);
-            updateRoomsTable(selectedDate); // Update rooms based on selected date
+            
+            updateSelectedDateDisplay();
+            await loadBookingsForDate(selectedDate);
+            renderRoomAvailabilityTable();
         });
 
         calendarGrid.appendChild(dayCell);
     }
-    updateRoomsTable(selectedDate); // Update rooms when calendar is rendered
+}
+
+function renderRoomAvailabilityTable() {
+    if (allRooms.length === 0) {
+        roomAvailabilityBody.innerHTML = `
+            <tr>
+                <td colspan="100%" class="room-availability-loading">
+                    <i class="fas fa-spinner"></i>
+                    <div>Loading room availability...</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    // Update table header with room columns
+    const tableHeader = document.querySelector('.room-availability-table thead tr');
+    tableHeader.innerHTML = '<th class="time-column">Time</th>';
+    
+    allRooms.forEach(room => {
+        const roomHeader = document.createElement('th');
+        roomHeader.className = 'room-header';
+        roomHeader.innerHTML = `
+            <span class="room-number">${room.roomNumber}</span>
+        `;
+        tableHeader.appendChild(roomHeader);
+    });
+
+    // Create time slot rows
+    roomAvailabilityBody.innerHTML = '';
+    
+    timeSlots.forEach(timeSlot => {
+        const row = document.createElement('tr');
+        
+        // Time column
+        const timeCell = document.createElement('td');
+        timeCell.className = 'time-slot';
+        timeCell.textContent = timeSlot.display;
+        row.appendChild(timeCell);
+        
+        // Room availability columns
+        allRooms.forEach(room => {
+            const roomCell = document.createElement('td');
+            roomCell.className = 'room-cell';
+            
+            // Check if room is booked at this time
+            const isBooked = roomBookings.some(booking => 
+                booking.room_id === room.id && 
+                booking.start_time === timeSlot.start
+            );
+            
+            // Check if the time slot is in the past
+            const now = new Date();
+            const slotDateTime = new Date(selectedDate);
+            const [hours, minutes] = timeSlot.start.split(':');
+            slotDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            
+            const isPast = slotDateTime < now;
+            
+            if (isPast) {
+                roomCell.className += ' unavailable';
+                roomCell.innerHTML = '<small style="opacity: 0.6;">Past</small>';
+            } else if (isBooked) {
+                roomCell.className += ' booked';
+                roomCell.innerHTML = '<small style="font-weight: 600;">Booked</small>';
+            } else {
+                roomCell.className += ' available';
+                roomCell.innerHTML = `
+                    <button class="book-cell-btn" 
+                            onclick="bookRoom('${room.id}', '${room.roomNumber}', '${room.buildingName}', '${timeSlot.start}', '${timeSlot.end}')">
+                        Book Now
+                    </button>
+                `;
+            }
+            
+            row.appendChild(roomCell);
+        });
+        
+        roomAvailabilityBody.appendChild(row);
+    });
+}
+
+function updateSelectedDateDisplay() {
+    const formattedDate = selectedDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    selectedDateText.textContent = formattedDate;
 }
 
 function previousMonth() {
@@ -127,75 +304,27 @@ function nextMonth() {
     renderCalendar();
 }
 
-function updateRoomsTable(date) {
-    roomsTableBody.innerHTML = ''; // Clear existing rows
-    const formattedDate = date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+// Book room function
+function bookRoom(roomId, roomNumber, buildingName, startTime, endTime) {
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    
+    // Convert 24-hour format to 12-hour for display
+    const formatTime = (time24) => {
+        const [hours, minutes] = time24.split(':');
+        const hour12 = parseInt(hours) % 12 || 12;
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+        return `${hour12}:${minutes} ${ampm}`;
+    };
+    
+    const queryParams = new URLSearchParams({
+        roomNumber: roomNumber,
+        building: buildingName,
+        date: selectedDateStr,
+        startTime: startTime,
+        endTime: endTime,
+        fromTime: formatTime(startTime),
+        toTime: formatTime(endTime)
     });
 
-    // Filter rooms for the selected date
-    const roomsForSelectedDate = allRooms.filter(room => {
-        return room.date.getDate() === date.getDate() &&
-               room.date.getMonth() === date.getMonth() &&
-               room.date.getFullYear() === date.getFullYear();
-    });
-
-    if (roomsForSelectedDate.length === 0) {
-        const noRoomsRow = document.createElement('tr');
-        noRoomsRow.innerHTML = `<td colspan="6" style="text-align: center; padding: 20px;">No rooms available for ${formattedDate}</td>`;
-        roomsTableBody.appendChild(noRoomsRow);
-    } else {
-        roomsForSelectedDate.forEach(room => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${formattedDate}</td>
-                <td>${room.building}</td>
-                <td>${room.room}</td>
-                <td>${room.time}</td>
-                <td><span class="status-available">${room.status}</span></td>
-                <td>
-                    <button 
-                      class="book-btn" 
-                      data-date="${room.date.toISOString()}"
-                      data-building="${room.building}"
-                      data-room="${room.room}"
-                      data-time="${room.time}"
-                    >Book Now</button>
-                </td>
-            `;
-            roomsTableBody.appendChild(row);
-        });
-    }
+    window.location.href = `book_room.html?${queryParams.toString()}`;
 }
-
-// Event listener for Book Now buttons
-document.addEventListener("click", function (e) {
-    if (e.target.classList.contains("book-btn")) {
-        const btn = e.target;
-        const date = new Date(btn.getAttribute("data-date"));
-        const building = btn.getAttribute("data-building");
-        const room = btn.getAttribute("data-room");
-        const time = btn.getAttribute("data-time");
-
-        const [fromTime, toTime] = time.split(" - ");
-
-        const queryParams = new URLSearchParams({
-            day: date.getDate(),
-            month: date.getMonth(),
-            year: date.getFullYear(),
-            building,
-            roomNumber: room,
-            fromTime,
-            toTime,
-        });
-
-        window.location.href = `book_room.html?${queryParams.toString()}`;
-    }
-});
-
-// Initial render
-renderCalendar();
-updateRoomsTable(selectedDate);

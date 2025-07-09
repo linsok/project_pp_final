@@ -87,54 +87,40 @@
         <div class="hero"  >
             <img src="img/new_book_online.png" alt="Book Online">
             <form class="booking-form">
-                <!-- Horizontal Search Form -->
-                <div class="horizontal-search-form">
-                    <div class="search-field">
-                        <div class="field-header">
-                            <i class="fas fa-door-open"></i>
-                            <span class="field-title">Room Type</span>
-                        </div>
+            
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="roomType">
+                            <i class="fas fa-door-open"></i> Room Type
+                        </label>
                         <select id="roomType" class="form-control">
-                            <option value="">Select Room Type</option>
+                            <option>Select Room Type</option>
                             <option>Lecture Hall</option>
                             <option>Conference Room</option>
                             <option>Meeting Room</option>
-                            <option>Study Room</option>
+                            
+                            
                         </select>
                     </div>
-
-                    <div class="search-field">
-                        <div class="field-header">
-                            <i class="fas fa-hashtag"></i>
-                            <span class="field-title">Room Number</span>
-                        </div>
+                    <div class="form-group">
+                        <label for="roomNumber">
+                            <i class="fas fa-hashtag"></i> Room Number
+                        </label>
                         <select id="roomNumber" class="form-control">
-                            <option value="">Select Room Number</option>
-                            <option>A101</option>
-                            <option>A201</option>
-                            <option>A301</option>
-                            <option>B101</option>
-                            <option>B201</option>
-                            <option>B301</option>
-                            <option>C101</option>
-                            <option>C201</option>
-                            <option>T401</option>
-                            <option>T301</option>
-                            <option>L101</option>
-                            <option>L201</option>
-                            <option>306</option>
-                            <option>205</option>
-                            <option>107</option>
+                            <option>Select Room Number</option>
+                            <option>Room 101</option>
+                            <option>Room 102</option>
+                            <option>Room 201</option>
+                            <option>Room 202</option>
                         </select>
                     </div>
 
-                    <div class="search-field">
-                        <div class="field-header">
-                            <i class="fas fa-users"></i>
-                            <span class="field-title">Number of People</span>
-                        </div>
+                    <div class="form-group">
+                        <label for="capacity">
+                            <i class="fas fa-users"></i> Number of People
+                        </label>
                         <select id="capacity" class="form-control">
-                            <option value="">Select Capacity</option>
+                            <option>Select Capacity</option>
                             <option>1-10 people</option>
                             <option>11-25 people</option>
                             <option>26-50 people</option>
@@ -143,60 +129,31 @@
                         </select>
                     </div>
 
-                    <div class="search-field">
-                        <div class="field-header">
-                            <i class="fas fa-calendar"></i>
-                            <span class="field-title">Date</span>
-                        </div>
-                        <input type="date" id="date" class="form-control" placeholder="mm/dd/yyyy">
+                    <div class="form-group">
+                        <label for="date">
+                            <i class="fas fa-calendar"></i> Date
+                        </label>
+                        <input type="date" id="date" class="form-control">
                     </div>
 
-                    <div class="search-field time-field">
-                        <div class="field-header">
-                            <i class="fas fa-clock"></i>
-                            <span class="field-title">Time</span>
-                        </div>
-                        <div class="time-inputs">
-                            <div class="time-input-group">
-                                <span class="time-label">From:</span>
-                                <input type="time" id="from_time" class="time-input" placeholder="--:--">
-                            </div>
-                            <span class="time-separator">—</span>
-                            <div class="time-input-group">
-                                <span class="time-label">To:</span>
-                                <input type="time" id="to_time" class="time-input" placeholder="--:--">
-                            </div>
+                    <div class="form-group">
+                        <label >
+                            <i class="fas fa-clock"></i> Time
+                        </label>
+                        <div class="time-inputs-group">
+                            <span>From:</span>
+                            <input type="time" id="from_time" class="form-control">
+                            <span>To:</span>
+                            <input type="time" id="to_time" class="form-control">
                         </div>
                     </div>
+
+                    
                 </div>
-
-                <!-- Search Button -->
-                <div class="search-button-container">
-                    <button type="submit" class="search-btn-horizontal">
+                <button type="submit" class="search-btn-main">
                         <i class="fas fa-search"></i>
-                        SEARCH AVAILABLE ROOMS
-                    </button>
-                </div>
-                <!-- Four Room Type Boxes -->
-                <div class="room-type-row">
-                  <div class="room-type-box">
-                    <img src="img/proper-acoustics-in-a-lecture-hall.jpg" alt="Lecture Hall">
-                    <div class="room-type-label">Lecture Hall</div>
-                  </div>
-                  <div class="room-type-box">
-                    <img src="img/banner-cityproduct-meetingroom.jpg" alt="Conference Room">
-                    <div class="room-type-label">Conference Room</div>
-                  </div>
-                  <div class="room-type-box">
-                    <img src="img/Library.jpg" alt="Study Room">
-                    <div class="room-type-label">Study Room</div>
-                  </div>
-                  <div class="room-type-box">
-                    <img src="img/banner-cityproduct-meetingroom.jpg" alt="Meeting Room">
-                    <div class="room-type-label">Meeting Room</div>
-                  </div>
-                </div>
-                <!-- End Room Type Boxes -->
+                        Search Available Rooms
+                    </button><br><br>
 
                  
 
@@ -204,6 +161,19 @@
                 </div>
             
 </form>
+
+<!--  Now outside the form -->
+<div class="quick-select-buttons" style="margin-top: 20px; text-align: center;">
+    <button type="button" class="quick-select-btn" data-room-type="Lecture Hall">Lecture Hall</button>
+    <button type="button" class="quick-select-btn" data-room-type="Meeting Room">Meeting Room</button>
+    <button type="button" class="quick-select-btn" data-room-type="Conference Room">Conference Room</button>
+</div>
+
+<!--  Also outside the form -->
+<div id="roomImageDisplay" style="display: none; margin-top: 20px; text-align: center;">
+    <h3 id="selectedRoomName" style="margin-bottom: 10px;"></h3>
+    <img id="selectedRoomImage" src="" alt="Room Type Image" style="max-width: 100%; height: auto; border-radius: 10px;">
+</div>
 
 
         </div>
@@ -247,13 +217,10 @@
  <!-- Modal -->
 <div id="bookingModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">Search Results</h3>
-            <button class="close-btn">&times;</button>
-        </div>
+        <span class="close-btn">&times;</span>
         <div id="bookingInfo"></div>
         <div class="modal-actions">
-            <button id="bookNowBtn">BOOK</button>
+            <button id="bookNowBtn" >BOOK</button>
         </div>
     </div>
 </div>
