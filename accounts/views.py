@@ -287,6 +287,21 @@ class UserBookingsView(generics.ListAPIView):
         return Booking.objects.filter(user=self.request.user).order_by('-created_at')
 
 
+class BookingDeleteView(generics.DestroyAPIView):
+    """API endpoint for deleting user's bookings"""
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        # Users can only delete their own bookings
+        return Booking.objects.filter(user=self.request.user)
+    
+    def perform_destroy(self, instance):
+        # Optional: Add logging or additional checks before deletion
+        print(f"Deleting booking {instance.id} by user {self.request.user.username}")
+        super().perform_destroy(instance)
+
+
 class RoomTypesView(generics.ListAPIView):
     """API endpoint for getting available room types"""
     permission_classes = [permissions.AllowAny]
@@ -327,6 +342,218 @@ class ReportProblemListView(generics.ListAPIView):
     queryset = ReportProblem.objects.all().order_by('-created_at')
     serializer_class = ReportProblemSerializer
     permission_classes = [permissions.IsAdminUser]  # Only admin can view all reports
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_room_building_mapping(request):
+    """Get room number to building name mapping"""
+    rooms = Room.objects.all()
+    mapping = {}
+    
+    for room in rooms:
+        mapping[room.roomNumber] = room.buildingName
+    
+    return Response({
+        'room_building_mapping': mapping,
+        'message': 'Room-building mapping retrieved successfully'
+    })
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_email(request):
+    """Change user email with password verification"""
+    user = request.user
+    new_email = request.data.get('email')
+    current_password = request.data.get('password')
+    
+    if not new_email or not current_password:
+        return Response({
+            'error': 'Both new email and current password are required'
+        }, status=400)
+    
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=400)
+    
+    # Validate email format
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    
+    try:
+        validate_email(new_email)
+    except ValidationError:
+        return Response({
+            'error': 'Please enter a valid email address'
+        }, status=400)
+    
+    # Check if email is already in use
+    if User.objects.filter(email=new_email).exclude(id=user.id).exists():
+        return Response({
+            'error': 'This email address is already in use'
+        }, status=400)
+    
+    # Update email
+    user.email = new_email
+    user.save()
+    
+    return Response({
+        'message': 'Email updated successfully',
+        'email': new_email
+    }, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_phone(request):
+    """Change user phone number with password verification"""
+    user = request.user
+    new_phone = request.data.get('phone')
+    current_password = request.data.get('password')
+    
+    if not new_phone or not current_password:
+        return Response({
+            'error': 'Both new phone number and current password are required'
+        }, status=400)
+    
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=400)
+    
+    # Validate phone number format (basic validation)
+    import re
+    # Allow local and international formats, including leading zeros
+    phone_pattern = r'^[\+]?[\d]{7,15}$'  # Allow 7-15 digits, with optional + prefix
+    cleaned_phone = new_phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+    if not re.match(phone_pattern, cleaned_phone):
+        return Response({
+            'error': 'Please enter a valid phone number (7-15 digits)'
+        }, status=400)
+    
+    # Get or create profile
+    profile, created = Profile.objects.get_or_create(user=user)
+    
+    # Update phone number
+    profile.phone = new_phone
+    profile.save()
+    
+    return Response({
+        'message': 'Phone number updated successfully',
+        'phone': new_phone
+    }, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_password(request):
+    """Change user password with current password verification"""
+    user = request.user
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+    
+    if not all([current_password, new_password, confirm_password]):
+        return Response({
+            'error': 'Current password, new password, and confirmation are required'
+        }, status=400)
+    
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=400)
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        return Response({
+            'error': 'New passwords do not match'
+        }, status=400)
+    
+    # Validate new password strength
+    if len(new_password) < 8:
+        return Response({
+            'error': 'Password must be at least 8 characters long'
+        }, status=400)
+    
+    # Check if new password is different from current
+    if user.check_password(new_password):
+        return Response({
+            'error': 'New password must be different from current password'
+        }, status=400)
+    
+    # Additional password validation (optional)
+    import re
+    if not re.search(r'[A-Za-z]', new_password) or not re.search(r'[0-9]', new_password):
+        return Response({
+            'error': 'Password must contain at least one letter and one number'
+        }, status=400)
+    
+    # Update password
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({
+        'message': 'Password updated successfully'
+    }, status=200)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_username(request):
+    """Change username with password verification"""
+    user = request.user
+    new_username = request.data.get('username')
+    current_password = request.data.get('password')
+    
+    if not new_username or not current_password:
+        return Response({
+            'error': 'Both new username and current password are required'
+        }, status=400)
+    
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=400)
+    
+    # Validate username format and length
+    import re
+    if len(new_username) < 3:
+        return Response({
+            'error': 'Username must be at least 3 characters long'
+        }, status=400)
+    
+    if len(new_username) > 30:
+        return Response({
+            'error': 'Username must be less than 30 characters long'
+        }, status=400)
+    
+    # Check if username contains only valid characters (letters, numbers, underscores, hyphens)
+    if not re.match(r'^[a-zA-Z0-9_-]+$', new_username):
+        return Response({
+            'error': 'Username can only contain letters, numbers, underscores, and hyphens'
+        }, status=400)
+    
+    # Check if username is already taken
+    if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+        return Response({
+            'error': 'This username is already taken'
+        }, status=400)
+    
+    # Check if new username is different from current
+    if user.username == new_username:
+        return Response({
+            'error': 'New username must be different from current username'
+        }, status=400)
+    
+    # Update username
+    user.username = new_username
+    user.save()
+    
+    return Response({
+        'message': 'Username updated successfully',
+        'username': new_username
+    }, status=200)
 
 def test_api(request):
     """Simple test endpoint"""

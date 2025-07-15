@@ -187,33 +187,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const fromTime = urlParams.get("fromTime");
     const toTime = urlParams.get("toTime");
 
-    // 🏢 Map room numbers to buildings
-    const roomToBuildingMap = {
-        "101": "Building A",
-        "102": "Building A",
-        "201": "Building A",
-        "202": "Building A",
-        "301": "Building B",
-        "302": "Building B",
-        // Add more if needed
-    };
-
     // === Auto-fill room number ===
     if (roomNumber) {
         roomNumberInput.value = roomNumber;
-
-        // Auto-select building based on room number
-        const cleanRoom = roomNumber.replace(/[^0-9]/g, ''); // e.g., "Room 101" -> "101"
-        const guessedBuilding = roomToBuildingMap[cleanRoom];
-
-        if (guessedBuilding) {
-            for (let option of buildingSelect.options) {
-                if (option.value === guessedBuilding) {
-                    option.selected = true;
-                    break;
-                }
-            }
-        }
+        
+        // Auto-select building will be handled by the main room-building mapping system
+        // This ensures consistency with the API-driven approach
     }
 
     // === Auto-fill capacity ===
@@ -251,6 +230,119 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector("form");
+    let roomBuildingMapping = {}; // Store room-to-building mapping from API
+
+    // Fetch room-building mapping from API
+    async function fetchRoomBuildingMapping() {
+        try {
+            const response = await fetch('http://localhost:8000/api/rooms/building-mapping/');
+            if (response.ok) {
+                const data = await response.json();
+                roomBuildingMapping = data.room_building_mapping;
+                console.log('Room-building mapping loaded:', roomBuildingMapping);
+            } else {
+                console.error('Failed to fetch room-building mapping');
+                // Fallback to static mapping if API fails
+                roomBuildingMapping = {
+                    "A101": "Building A",
+                    "A201": "Building A", 
+                    "A301": "Building A",
+                    "B101": "Building B",
+                    "B201": "Building B",
+                    "B301": "Building B",
+                    "C101": "Building C",
+                    "C201": "Building C"
+                };
+            }
+        } catch (error) {
+            console.error('Error fetching room-building mapping:', error);
+            // Use fallback mapping
+            roomBuildingMapping = {
+                "A101": "Building A",
+                "A201": "Building A", 
+                "A301": "Building A",
+                "B101": "Building B",
+                "B201": "Building B",
+                "B301": "Building B",
+                "C101": "Building C",
+                "C201": "Building C"
+            };
+        }
+    }
+
+    // Auto-select building based on room number
+    function autoSelectBuilding(roomNumber) {
+        const buildingSelect = document.getElementById("building");
+        const building = roomBuildingMapping[roomNumber];
+        
+        if (building) {
+            buildingSelect.value = building;
+            buildingSelect.style.backgroundColor = "#e8f5e8"; // Light green to show auto-selection
+            
+            // Show feedback to user
+            const hint = buildingSelect.parentElement.querySelector('.input-hint');
+            if (hint) {
+                hint.textContent = `Auto-selected: ${building}`;
+                hint.style.color = "#28a745";
+                
+                // Reset hint after 3 seconds
+                setTimeout(() => {
+                    hint.textContent = "Building";
+                    hint.style.color = "";
+                }, 3000);
+            }
+        } else {
+            // Reset building selection if room not found
+            buildingSelect.value = "";
+            buildingSelect.style.backgroundColor = "";
+            
+            // Show message if room number doesn't exist
+            if (roomNumber.trim()) {
+                const hint = buildingSelect.parentElement.querySelector('.input-hint');
+                if (hint) {
+                    hint.textContent = "Room not found - please select building manually";
+                    hint.style.color = "#dc3545";
+                    
+                    setTimeout(() => {
+                        hint.textContent = "Building";
+                        hint.style.color = "";
+                    }, 3000);
+                }
+            }
+        }
+    }
+
+    // Set up room number input listener
+    function setupRoomNumberAutoComplete() {
+        const roomNumberInput = document.getElementById("roomNumber");
+        if (roomNumberInput) {
+            roomNumberInput.addEventListener('input', function(e) {
+                const roomNumber = e.target.value.trim();
+                autoSelectBuilding(roomNumber);
+            });
+
+            // Also trigger on blur (when user leaves the field)
+            roomNumberInput.addEventListener('blur', function(e) {
+                const roomNumber = e.target.value.trim();
+                autoSelectBuilding(roomNumber);
+            });
+        }
+    }
+
+    // Initialize everything
+    async function initializeBookingForm() {
+        await fetchRoomBuildingMapping();
+        setupRoomNumberAutoComplete();
+        
+        // If room number is already filled (from URL params), auto-select building
+        const roomNumberInput = document.getElementById("roomNumber");
+        if (roomNumberInput && roomNumberInput.value) {
+            autoSelectBuilding(roomNumberInput.value);
+        }
+    }
+
+    // Start initialization
+    initializeBookingForm();
 
     form.addEventListener("submit", function (e) {
         e.preventDefault(); // Prevent default form submission
@@ -258,8 +350,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Check authentication
         const token = localStorage.getItem('authToken');
         if (!token) {
-            alert("❌ Please log in to make a booking.");
-            window.location.href = "index.html";
+            showErrorModal("❌ Authentication Required", "Please log in to make a booking. You will be redirected to the login page.");
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 2000);
             return;
         }
 
@@ -280,7 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if (!allFilled) {
-            alert(`⚠️ Please fill in all required fields: ${missingFields.join(', ')}`);
+            showErrorModal("⚠️ Missing Information", `Please fill in all required fields: ${missingFields.join(', ')}`);
             return;
         }
 
@@ -304,7 +398,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Validate time
         if (formData.timeFrom >= formData.timeTo) {
-            alert("⚠️ End time must be after start time.");
+            showWarning("End time must be after start time.");
             return;
         }
 
@@ -315,116 +409,136 @@ document.addEventListener("DOMContentLoaded", function () {
         const today = new Date();
         const selectedDate = new Date(bookingDate);
         if (selectedDate < today.setHours(0, 0, 0, 0)) {
-            alert("⚠️ Cannot book rooms for past dates.");
+            showErrorModal("⚠️ Invalid Date", "Cannot book rooms for past dates. Please select a future date.");
             return;
         }
 
-        // Prepare booking data for confirmation
-        const bookingData = {
-            room_number: formData.roomNumber,
-            building_name: formData.building,
-            booking_date: bookingDate,
-            start_time: formData.timeFrom,
-            end_time: formData.timeTo,
-            purpose: formData.meetingAgenda || `${formData.role} meeting`,
-            // Store form data for confirmation display
-            firstName: formData.firstName,
-            surname: formData.surname,
-            email: formData.email
-        };
-
-        // Show confirmation modal instead of alert
-        showConfirmationModal(bookingData, token);
+        // Show custom confirmation modal
+        showBookingConfirmationModal(formData, bookingDate, token);
     });
 
-    // Global variables to store booking data
-    let currentBookingData = null;
-    let currentAuthToken = null;
+    // Function to show custom booking confirmation modal
+    function showBookingConfirmationModal(formData, bookingDate, token) {
+        const modal = document.getElementById('bookingConfirmationModal');
+        const detailsGrid = document.getElementById('bookingDetailsGrid');
+        
+        // Populate booking details
+        const details = [
+            {
+                icon: 'fas fa-user',
+                label: 'Name',
+                value: `${formData.firstName} ${formData.surname}`
+            },
+            {
+                icon: 'fas fa-envelope',
+                label: 'Email',
+                value: formData.email
+            },
+            {
+                icon: 'fas fa-calendar',
+                label: 'Date',
+                value: new Date(bookingDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+            },
+            {
+                icon: 'fas fa-clock',
+                label: 'Time',
+                value: `${formData.timeFrom} - ${formData.timeTo}`
+            },
+            {
+                icon: 'fas fa-building',
+                label: 'Building',
+                value: formData.building
+            },
+            {
+                icon: 'fas fa-door-open',
+                label: 'Room',
+                value: formData.roomNumber
+            },
+            {
+                icon: 'fas fa-user-tag',
+                label: 'Role',
+                value: formData.role.charAt(0).toUpperCase() + formData.role.slice(1)
+            },
+            {
+                icon: 'fas fa-comment',
+                label: 'Purpose',
+                value: formData.meetingAgenda || 'Not specified'
+            }
+        ];
 
-    // Show confirmation modal
-    function showConfirmationModal(bookingData, token) {
-        currentBookingData = bookingData;
-        currentAuthToken = token;
-
-        // Populate confirmation modal
-        document.getElementById('confirmName').textContent = `${bookingData.firstName} ${bookingData.surname}`;
-        document.getElementById('confirmEmail').textContent = bookingData.email;
-        document.getElementById('confirmDate').textContent = bookingData.booking_date;
-        document.getElementById('confirmTime').textContent = `${bookingData.start_time} - ${bookingData.end_time}`;
-        document.getElementById('confirmBuilding').textContent = bookingData.building_name;
-        document.getElementById('confirmRoom').textContent = bookingData.room_number;
-        document.getElementById('confirmPurpose').textContent = bookingData.purpose;
+        // Create HTML for details
+        detailsGrid.innerHTML = details.map(detail => `
+            <div class="booking-detail-item">
+                <div class="booking-detail-label">
+                    <i class="${detail.icon}"></i>
+                    ${detail.label}
+                </div>
+                <div class="booking-detail-value">${detail.value}</div>
+            </div>
+        `).join('');
 
         // Show modal
-        const modal = document.getElementById('bookingConfirmationModal');
-        modal.classList.add('show');
-        document.body.classList.add('modal-open');
-    }
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
 
-    // Close confirmation modal
-    window.closeConfirmationModal = function() {
-        const modal = document.getElementById('bookingConfirmationModal');
-        modal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-        currentBookingData = null;
-        currentAuthToken = null;
-    };
+        // Handle confirm button
+        const confirmBtn = document.getElementById('confirmBookingBtn');
+        const cancelBtn = document.getElementById('cancelBookingBtn');
 
-    // Confirm booking (called when OK button is clicked)
-    window.confirmBooking = function() {
-        if (currentBookingData && currentAuthToken) {
-            closeConfirmationModal();
+        // Remove existing event listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Add new event listeners
+        newConfirmBtn.addEventListener('click', function() {
+            hideBookingConfirmationModal();
             
-            // Remove the extra fields that shouldn't be sent to API
-            const apiBookingData = {
-                room_number: currentBookingData.room_number,
-                building_name: currentBookingData.building_name,
-                booking_date: currentBookingData.booking_date,
-                start_time: currentBookingData.start_time,
-                end_time: currentBookingData.end_time,
-                purpose: currentBookingData.purpose
+            // Prepare booking data for API
+            const bookingData = {
+                room_number: formData.roomNumber,
+                building_name: formData.building,
+                booking_date: bookingDate,
+                start_time: formData.timeFrom,
+                end_time: formData.timeTo,
+                purpose: formData.meetingAgenda || `${formData.role} meeting`
             };
-            
-            submitBooking(apiBookingData, currentAuthToken);
-        }
-    };
 
-    // Show success modal
-    function showSuccessModal() {
-        const modal = document.getElementById('successModal');
-        modal.classList.add('show');
-        document.body.classList.add('modal-open');
+            // Submit booking to API
+            submitBooking(bookingData, token);
+        });
+
+        newCancelBtn.addEventListener('click', function() {
+            hideBookingConfirmationModal();
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideBookingConfirmationModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                hideBookingConfirmationModal();
+            }
+        });
     }
 
-    // Close success modal
-    window.closeSuccessModal = function() {
-        const modal = document.getElementById('successModal');
-        modal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-        
-        // Reset form
-        form.reset();
-    };
-
-    // View booking history
-    window.viewBookingHistory = function() {
-        window.location.href = "booking_history.html";
-    };
-
-    // Show error modal
-    function showErrorModal(message) {
-        document.getElementById('errorMessage').textContent = message;
-        const modal = document.getElementById('errorModal');
-        modal.classList.add('show');
-        document.body.classList.add('modal-open');
+    // Function to hide booking confirmation modal
+    function hideBookingConfirmationModal() {
+        const modal = document.getElementById('bookingConfirmationModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
     }
-
-    // Close error modal
-    window.closeErrorModal = function() {
-        const modal = document.getElementById('errorModal');
-        modal.classList.remove('show');
-        document.body.classList.remove('modal-open');
-    };
 
     async function submitBooking(bookingData, token) {
         try {
@@ -449,30 +563,35 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log('Booking response:', result);
 
             if (response.ok) {
-                showSuccessModal();
+                showSuccessModal("✅ Room booked successfully!", "Your booking has been confirmed. You will receive a confirmation email shortly.");
+                form.reset(); // Clear the form
             } else {
-                // Handle API errors
-                let errorMessage = "Failed to book room. ";
+                // Handle API errors with detailed information
+                console.error('Booking API Error:', result);
+                let errorMessage = "Failed to book room.\n\n";
                 
                 if (result.non_field_errors) {
-                    errorMessage += result.non_field_errors.join(', ');
+                    errorMessage += "Error: " + result.non_field_errors.join(', ');
                 } else if (result.detail) {
-                    errorMessage += result.detail;
+                    errorMessage += "Error: " + result.detail;
                 } else if (result.room_number) {
-                    errorMessage += "Invalid room number.";
+                    errorMessage += "Room Error: " + (Array.isArray(result.room_number) ? result.room_number.join(', ') : result.room_number);
+                } else if (result.building_name) {
+                    errorMessage += "Building Error: " + (Array.isArray(result.building_name) ? result.building_name.join(', ') : result.building_name);
                 } else if (result.booking_date) {
-                    errorMessage += "Invalid date.";
+                    errorMessage += "Date Error: " + (Array.isArray(result.booking_date) ? result.booking_date.join(', ') : result.booking_date);
                 } else if (result.start_time || result.end_time) {
-                    errorMessage += "Invalid time format.";
+                    errorMessage += "Time Error: " + (result.start_time || result.end_time);
                 } else {
+                    // Show a user-friendly message instead of the full JSON
                     errorMessage += "Please check your information and try again.";
                 }
                 
-                showErrorModal(errorMessage);
+                showErrorModal("❌ Booking Failed", errorMessage);
             }
         } catch (error) {
             console.error('Booking error:', error);
-            showErrorModal("Network error. Please check your connection and try again.");
+            showErrorModal("❌ Network Error", "Please check your internet connection and try again.");
         } finally {
             // Restore button state
             const submitButton = document.querySelector('button[type="submit"]');
@@ -481,15 +600,93 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Close modals when clicking outside
-    window.addEventListener('click', function(event) {
-        const modals = ['bookingConfirmationModal', 'successModal', 'errorModal'];
-        modals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (event.target === modal) {
-                modal.classList.remove('show');
-                document.body.classList.remove('modal-open');
+    // Function to show success modal
+    function showSuccessModal(title, message) {
+        const modal = document.getElementById('successModal');
+        const titleEl = document.getElementById('successTitle');
+        const messageEl = document.getElementById('successMessage');
+        const viewBookingsBtn = document.getElementById('viewBookingsBtn');
+        const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Show modal
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        // Remove existing event listeners
+        const newViewBtn = viewBookingsBtn.cloneNode(true);
+        const newCloseBtn = closeSuccessBtn.cloneNode(true);
+        viewBookingsBtn.parentNode.replaceChild(newViewBtn, viewBookingsBtn);
+        closeSuccessBtn.parentNode.replaceChild(newCloseBtn, closeSuccessBtn);
+
+        // Add new event listeners
+        newViewBtn.addEventListener('click', function() {
+            window.location.href = "booking_history.html";
+        });
+
+        newCloseBtn.addEventListener('click', function() {
+            hideSuccessModal();
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideSuccessModal();
             }
         });
-    });
+    }
+
+    // Function to show error modal
+    function showErrorModal(title, message) {
+        const modal = document.getElementById('errorModal');
+        const titleEl = document.getElementById('errorTitle');
+        const messageEl = document.getElementById('errorMessage');
+        const closeErrorBtn = document.getElementById('closeErrorBtn');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Show modal
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        // Remove existing event listeners
+        const newCloseBtn = closeErrorBtn.cloneNode(true);
+        closeErrorBtn.parentNode.replaceChild(newCloseBtn, closeErrorBtn);
+
+        // Add new event listeners
+        newCloseBtn.addEventListener('click', function() {
+            hideErrorModal();
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideErrorModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                hideErrorModal();
+            }
+        });
+    }
+
+    // Function to hide error modal
+    function hideErrorModal() {
+        const modal = document.getElementById('errorModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Function to hide success modal
+    function hideSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 });

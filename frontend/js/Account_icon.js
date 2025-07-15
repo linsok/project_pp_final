@@ -1,3 +1,85 @@
+// Global functions for logout modal (needed for onclick handlers)
+window.hideLogoutModal = function() {
+    const logoutModal = document.getElementById('logoutModal');
+    if (logoutModal) {
+        logoutModal.style.display = 'none';
+    }
+};
+
+window.confirmLogout = function() {
+    hideLogoutModal();
+    performLogout();
+};
+
+// Function to perform logout
+function performLogout() {
+    // Show logging out message
+    showLogoutMessage();
+    
+    const token = localStorage.getItem('authToken');
+    
+    if (token) {
+        // Call logout API
+        fetch('http://localhost:8000/auth/logout/', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Token ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            // Whether the API call succeeds or fails, we'll remove the token and redirect
+            console.log('Logout API response:', response.status);
+        })
+        .catch(error => {
+            console.log('Logout API error:', error);
+        })
+        .finally(() => {
+            // Always clear local storage and redirect after a short delay
+            setTimeout(() => {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                localStorage.removeItem('profileData');
+                
+                // Redirect to login page
+                window.location.href = 'index.html';
+            }, 800);
+        });
+    } else {
+        // No token, just redirect after delay
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 800);
+    }
+}
+
+// Function to show logout message
+function showLogoutMessage() {
+    // Create message if it doesn't exist
+    let logoutMessage = document.getElementById('logoutMessage');
+    if (!logoutMessage) {
+        logoutMessage = createLogoutMessage();
+        document.body.appendChild(logoutMessage);
+    }
+    
+    // Show the message
+    logoutMessage.style.display = 'flex';
+}
+
+// Function to create logout message
+function createLogoutMessage() {
+    const message = document.createElement('div');
+    message.id = 'logoutMessage';
+    message.className = 'logout-message';
+    message.innerHTML = `
+        <div class="logout-message-content">
+            <div class="logout-spinner"></div>
+            <p>Logging out...</p>
+        </div>
+    `;
+    return message;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // --- USER INFO FETCH ---
     const token = localStorage.getItem('authToken');
@@ -115,11 +197,77 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             console.log('Profile icon click handler added successfully');
+            
+            // Setup logout button functionality
+            setupLogoutHandler();
         } else {
             console.log('Could not find profile elements');
         }
     }
 
+    // Function to setup logout button handler
+    function setupLogoutHandler() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Show logout confirmation modal
+                showLogoutModal();
+            });
+            console.log('Logout button handler added successfully');
+        } else {
+            console.log('Logout button not found');
+        }
+    }
+
+    // Function to show logout confirmation modal
+    function showLogoutModal() {
+        // Create modal if it doesn't exist
+        let logoutModal = document.getElementById('logoutModal');
+        if (!logoutModal) {
+            logoutModal = createLogoutModal();
+            document.body.appendChild(logoutModal);
+        }
+        
+        // Show the modal
+        logoutModal.style.display = 'flex';
+        
+        // Close modal when clicking outside
+        logoutModal.addEventListener('click', function(e) {
+            if (e.target === logoutModal) {
+                hideLogoutModal();
+            }
+        });
+    }
+    
+    // Function to create logout modal
+    function createLogoutModal() {
+        const modal = document.createElement('div');
+        modal.id = 'logoutModal';
+        modal.className = 'logout-modal';
+        modal.innerHTML = `
+            <div class="logout-modal-content">
+                <div class="logout-modal-header">
+                    <h3>Confirm Logout</h3>
+                </div>
+                <div class="logout-modal-body">
+                    <p>Are you sure you want to logout?</p>
+                </div>
+                <div class="logout-modal-actions">
+                    <button class="logout-modal-btn logout-cancel-btn" onclick="hideLogoutModal()">
+                        Cancel
+                    </button>
+                    <button class="logout-modal-btn logout-confirm-btn" onclick="confirmLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        `;
+        return modal;
+    }
+    
     // --- PROFILE IMAGE UPLOAD LOGIC ---
     const profileImg = document.getElementById('profileImg');
     const editPhoto = document.getElementById('editPhoto');
@@ -143,13 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Validate file type
                 if (!file.type.startsWith('image/')) {
-                    alert('Please select an image file');
+                    showError('Please select an image file');
                     return;
                 }
                 
                 // Validate file size (5MB limit)
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('File size should be less than 5MB');
+                    showError('File size should be less than 5MB');
                     return;
                 }
                 
@@ -191,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Upload error:', error);
-                    alert('Failed to upload image. Please try again.');
+                    showError('Failed to upload image. Please try again.');
                     editPhoto.innerHTML = '<i class="fas fa-camera"></i>';
                 });
             }

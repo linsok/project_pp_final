@@ -49,6 +49,11 @@
                         <div class="user-email">your@remail.com</div>
                         </div>
                     </div>
+                    <div class="profile-actions">
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,27 +101,64 @@
 
         <div class="rooms-section">
             <div class="available-room-header">
-                <h2>Available Room</h2>
+                <h2>Room booking schedule</h2>
+                <div class="selected-date-display">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="selectedDateText">Select a date</span>
+                </div>
             </div>
-            <table class="rooms-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Building</th>
-                        <th>Room</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="roomsTableBody">
-                    </tbody>
-            </table>
-
-            <!-- <div class="expand-btn" onclick="toggleExpand()">
-                <span id="expandIcon">⌄</span>
-            </div>  -->
+            
+            <!-- Time-slot table -->
+            <div class="room-availability-container">
+                <div class="table-scroll-wrapper">
+                    <table class="room-availability-table">
+                        <thead>
+                            <tr>
+                                <th class="time-column">Time</th>
+                                <!-- Room columns will be dynamically added here -->
+                            </tr>
+                        </thead>
+                        <tbody id="roomAvailabilityBody">
+                            <!-- Time slots will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Weekly Booking Schedule -->
+            <div class="weekly-schedule-section">
+                <h2>Weekly booking schedule</h2>
+                
+                <!-- Room Selector -->
+                <div class="weekly-room-selector">
+                    <label for="weeklyRoomSelect">Select Room:</label>
+                    <select id="weeklyRoomSelect">
+                        <option value="">Choose a room</option>
+                        <!-- Options will be dynamically added -->
+                    </select>
+                </div>
+                
+                <div class="room-availability-container">
+                    <div class="table-scroll-wrapper">
+                        <table class="weekly-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <th class="day-column">Monday</th>
+                                    <th class="day-column">Tuesday</th>
+                                    <th class="day-column">Wednesday</th>
+                                    <th class="day-column">Thursday</th>
+                                    <th class="day-column">Friday</th>
+                                    <th class="day-column">Saturday</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyScheduleBody">
+                                <!-- Weekly schedule will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -160,6 +202,7 @@
 
    
 
+   <script src="js/message_system.js"></script>
    <script src="js/available_room.js"></script>
    <script src="js/Account_icon.js"></script>
    <script src="js/headerpage.js"></script>

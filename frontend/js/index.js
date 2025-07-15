@@ -22,6 +22,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // --- Check for URL parameters to show specific form ---
+  function checkUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const showParam = urlParams.get('show');
+    
+    if (showParam === 'forgot-password') {
+      showPanel('forgot-password-form');
+      // Clear the URL parameter after showing the form
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    } else {
+      // Default to login form
+      showPanel('login-form');
+    }
+  }
+
+  // Initialize the appropriate form based on URL parameters
+  checkUrlParameters();
+
   // --- Toggle forms ---
   showSignup.addEventListener('click', function (e) {
     e.preventDefault();
@@ -63,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('authToken', data.key);
         window.location.href = "home.html";
       } else if (data.non_field_errors) {
-        alert('Login failed: ' + data.non_field_errors.join(' '));
+        showError('Login failed: ' + data.non_field_errors.join(' '));
       } else {
-        alert('Login failed: ' + JSON.stringify(data));
+        showError('Login failed: ' + JSON.stringify(data));
       }
     });
   });
@@ -111,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (res.ok || data.key) {
           signupFormEl.reset();
           showPanel('login-form');
-          alert('Account created! You can now log in.');
+          showSuccess('Account created! You can now log in.');
         } else if (data.username && Array.isArray(data.username)) {
           errorDiv.innerText = data.username[0];
           errorDiv.style.display = "block";
@@ -322,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (hasError) return;
 
-    alert("Ready for real registration AJAX call!");
+    showInfo("Ready for real registration AJAX call!");
   });
 
   // --- Show login by default ---

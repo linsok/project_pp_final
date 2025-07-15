@@ -50,6 +50,11 @@
                         <div class="user-email">your@remail.com</div>
                         </div>
                     </div>
+                    <div class="profile-actions">
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -296,132 +301,74 @@
     </div>
     <div class="footer-bottom">
         <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
-    </div>
-</footer>
+    </div>    </footer>
 
     <!-- Booking Confirmation Modal -->
-    <div id="bookingConfirmationModal" class="modal">
-        <div class="modal-content confirmation-modal">
-            <div class="modal-header">
-                <div class="confirmation-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
+    <div id="bookingConfirmationModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header">
                 <h3>Confirm Your Booking</h3>
-                <p class="modal-subtitle">Please review your booking details below</p>
+                <p>Please review your booking details below</p>
             </div>
-            <div class="modal-body">
-                <div class="booking-summary-card">
-                    <div class="booking-info-section">
-                        <h4><i class="fas fa-user"></i> Personal Information</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Name</span>
-                                <span id="confirmName" class="info-value"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Email</span>
-                                <span id="confirmEmail" class="info-value"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="booking-info-section">
-                        <h4><i class="fas fa-clock"></i> Schedule</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Date</span>
-                                <span id="confirmDate" class="info-value highlight-date"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Time</span>
-                                <span id="confirmTime" class="info-value highlight-time"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="booking-info-section">
-                        <h4><i class="fas fa-building"></i> Location</h4>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Building</span>
-                                <span id="confirmBuilding" class="info-value"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Room</span>
-                                <span id="confirmRoom" class="info-value highlight-room"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="booking-info-section">
-                        <h4><i class="fas fa-comment-alt"></i> Purpose</h4>
-                        <div class="purpose-text">
-                            <span id="confirmPurpose" class="purpose-value"></span>
-                        </div>
-                    </div>
+            <div class="booking-confirmation-body">
+                <div class="booking-details-grid" id="bookingDetailsGrid">
+                    <!-- Details will be populated by JavaScript -->
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" onclick="closeConfirmationModal()">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-confirm" onclick="confirmBooking()">
-                    <i class="fas fa-check"></i> Confirm Booking
-                </button>
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="confirmBookingBtn">
+                        <i class="fas fa-check"></i>
+                        Yes, Book Room
+                    </button>
+                    <button type="button" class="booking-btn booking-btn-cancel" id="cancelBookingBtn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content success-modal">
-            <div class="modal-header">
-                <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3>Booking Confirmed!</h3>
-                <p class="modal-subtitle">Your reservation has been successfully created</p>
+    <div id="successModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <h3 id="successTitle">✅ Success!</h3>
+                <p id="successMessage">Operation completed successfully</p>
             </div>
-            <div class="modal-body">
-                <div class="success-message">
-                    <p>🎉 Great! Your room booking has been confirmed.</p>
-                    <p>You will receive a confirmation email shortly with all the details.</p>
+            <div class="booking-confirmation-body">
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="viewBookingsBtn">
+                        <i class="fas fa-history"></i>
+                        View My Bookings
+                    </button>
+                    <button type="button" class="booking-btn booking-btn-cancel" id="closeSuccessBtn">
+                        <i class="fas fa-home"></i>
+                        Stay Here
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeSuccessModal()">
-                    <i class="fas fa-plus"></i> Book Another Room
-                </button>
-                <button type="button" class="btn btn-primary" onclick="viewBookingHistory()">
-                    <i class="fas fa-list"></i> View My Bookings
-                </button>
             </div>
         </div>
     </div>
 
     <!-- Error Modal -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content error-modal">
-            <div class="modal-header">
-                <div class="error-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <h3>Booking Failed</h3>
-                <p class="modal-subtitle">We encountered an issue processing your request</p>
+    <div id="errorModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <h3 id="errorTitle">❌ Error</h3>
+                <p id="errorMessage">Something went wrong</p>
             </div>
-            <div class="modal-body">
-                <div class="error-message-container">
-                    <p id="errorMessage">An error occurred while booking the room.</p>
+            <div class="booking-confirmation-body">
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="closeErrorBtn">
+                        <i class="fas fa-check"></i>
+                        OK
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="closeErrorModal()">
-                    <i class="fas fa-redo"></i> Try Again
-                </button>
             </div>
         </div>
     </div>
 
+    <script src="js/message_system.js"></script>
     <script src="js/book_room.js"></script>
     <script src="js/Account_icon.js"></script>
 

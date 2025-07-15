@@ -44,11 +44,16 @@ const timeSlots = [
 let allRooms = [];
 let roomBookings = [];
 
+// Weekly Schedule Variables
+let weeklyBookings = [];
+let currentWeekStart = new Date();
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     loadRoomsFromDatabase();
     renderCalendar();
     updateSelectedDateDisplay();
+    initializeWeeklySchedule();
 });
 
 // Load rooms from the database
@@ -61,6 +66,8 @@ async function loadRoomsFromDatabase() {
             console.log('Loaded rooms:', allRooms);
             await loadBookingsForDate(selectedDate);
             renderRoomAvailabilityTable();
+            populateWeeklyRoomSelector();
+            loadWeeklyBookings();
         } else {
             console.error('Failed to load rooms');
             // Fallback to sample data
@@ -91,6 +98,8 @@ function useFallbackRoomData() {
         { id: 15, roomNumber: '107', buildingName: 'Building B', capacity: 18, roomType: 'Meeting Room' }
     ];
     renderRoomAvailabilityTable();
+    populateWeeklyRoomSelector();
+    loadWeeklyBookings();
 }
 
 // Load bookings for a specific date
@@ -327,4 +336,181 @@ function bookRoom(roomId, roomNumber, buildingName, startTime, endTime) {
     });
 
     window.location.href = `book_room.html?${queryParams.toString()}`;
+}
+
+// Book room function for weekly schedule
+function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, dayIndex) {
+    // Calculate the date for the selected day
+    const bookingDate = new Date(currentWeekStart);
+    bookingDate.setDate(currentWeekStart.getDate() + dayIndex);
+    const selectedDateStr = bookingDate.toISOString().split('T')[0];
+    
+    // Convert 24-hour format to 12-hour for display
+    const formatTime = (time24) => {
+        const [hours, minutes] = time24.split(':');
+        const hour12 = parseInt(hours) % 12 || 12;
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+        return `${hour12}:${minutes} ${ampm}`;
+    };
+    
+    const queryParams = new URLSearchParams({
+        roomNumber: roomNumber,
+        building: buildingName,
+        date: selectedDateStr,
+        startTime: startTime,
+        endTime: endTime,
+        fromTime: formatTime(startTime),
+        toTime: formatTime(endTime)
+    });
+
+    window.location.href = `book_room.html?${queryParams.toString()}`;
+}
+
+// Weekly Schedule Functions
+
+// Initialize weekly schedule
+function initializeWeeklySchedule() {
+    // Set current week start to Monday
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday = 0, Monday = 1
+    currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() + mondayOffset);
+    currentWeekStart.setHours(0, 0, 0, 0);
+    
+    populateWeeklyRoomSelector();
+    loadWeeklyBookings();
+}
+
+// Populate room selector dropdown
+function populateWeeklyRoomSelector() {
+    const roomSelect = document.getElementById('weeklyRoomSelect');
+    if (!roomSelect) return;
+    
+    // Clear existing options except the first one
+    roomSelect.innerHTML = '<option value="">Choose a room</option>';
+    
+    // Add room options
+    allRooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room.id;
+        option.textContent = `${room.roomNumber} - ${room.buildingName}`;
+        roomSelect.appendChild(option);
+    });
+    
+    // Add event listener for room selection
+    roomSelect.addEventListener('change', function() {
+        if (this.value) {
+            renderWeeklySchedule(parseInt(this.value));
+        } else {
+            // Clear the table if no room selected
+            document.getElementById('weeklyScheduleBody').innerHTML = '';
+        }
+    });
+}
+
+// Load weekly bookings from database
+async function loadWeeklyBookings() {
+    try {
+        // For now, generate sample weekly data
+        // In a real app, this would fetch from: /api/bookings/week/YYYY-MM-DD/
+        weeklyBookings = generateSampleWeeklyBookings();
+    } catch (error) {
+        console.error('Error loading weekly bookings:', error);
+        weeklyBookings = [];
+    }
+}
+
+// Generate sample weekly bookings
+function generateSampleWeeklyBookings() {
+    const bookings = [];
+    const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    allRooms.forEach(room => {
+        daysOfWeek.forEach((day, dayIndex) => {
+            // Add some random bookings for demonstration
+            if (Math.random() > 0.7) {
+                const randomTimeIndex = Math.floor(Math.random() * timeSlots.length);
+                bookings.push({
+                    room_id: room.id,
+                    day: day,
+                    dayIndex: dayIndex,
+                    start_time: timeSlots[randomTimeIndex].start,
+                    end_time: timeSlots[randomTimeIndex].end,
+                    status: 'confirmed',
+                    user: 'Sample User'
+                });
+            }
+        });
+    });
+    
+    return bookings;
+}
+
+// Render weekly schedule for selected room
+function renderWeeklySchedule(roomId) {
+    const weeklyBody = document.getElementById('weeklyScheduleBody');
+    if (!weeklyBody) return;
+    
+    const selectedRoom = allRooms.find(room => room.id === roomId);
+    if (!selectedRoom) return;
+    
+    weeklyBody.innerHTML = '';
+    
+    timeSlots.forEach(timeSlot => {
+        const row = document.createElement('tr');
+        
+        // Time column
+        const timeCell = document.createElement('td');
+        timeCell.className = 'time-slot';
+        timeCell.textContent = timeSlot.display;
+        row.appendChild(timeCell);
+        
+        // Day columns (Monday to Saturday)
+        const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        daysOfWeek.forEach((day, dayIndex) => {
+            const dayCell = document.createElement('td');
+            dayCell.className = 'day-cell';
+            
+            // Check if room is booked at this time on this day
+            const isBooked = weeklyBookings.some(booking => 
+                booking.room_id === roomId && 
+                booking.day === day &&
+                booking.start_time === timeSlot.start
+            );
+            
+            // Get the date for this day
+            const date = new Date(currentWeekStart);
+            date.setDate(currentWeekStart.getDate() + dayIndex);
+            
+            // Check if the time slot is in the past
+            const now = new Date();
+            const slotDateTime = new Date(date);
+            const [hours, minutes] = timeSlot.start.split(':');
+            slotDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            
+            const isPast = slotDateTime < now;
+            
+            if (isPast) {
+                dayCell.className += ' unavailable';
+                dayCell.innerHTML = '<small style="opacity: 0.6;">Past</small>';
+            } else if (isBooked) {
+                dayCell.className += ' booked';
+                dayCell.innerHTML = '<small style="font-weight: 600;">Booked</small>';
+            } else {
+                dayCell.className += ' available';
+                dayCell.innerHTML = `
+                    <button class="book-cell-btn" 
+                            onclick="bookRoomWeekly('${selectedRoom.id}', '${selectedRoom.roomNumber}', '${selectedRoom.buildingName}', '${timeSlot.start}', '${timeSlot.end}', ${dayIndex})">
+                        Book Now
+                    </button>
+                `;
+            }
+            
+            row.appendChild(dayCell);
+        });
+        
+        weeklyBody.appendChild(row);
+    });
 }

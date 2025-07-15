@@ -11,7 +11,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ['image', 'image_url', 'username', 'email']
+        fields = ['image', 'image_url', 'username', 'email', 'phone']
         
     def get_image_url(self, obj):
         """Return image URL - either from database or file system"""
@@ -89,7 +89,6 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = ['id', 'room_details', 'user_name', 'booking_date', 
                  'start_time', 'end_time', 'purpose', 'status', 'created_at',
                  'room_number', 'building_name']
-        read_only_fields = ['id', 'user_name', 'status', 'created_at']
         
     def validate(self, data):
         """Validate booking and find room by number and building"""
@@ -159,10 +158,16 @@ class BookingSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        """Create booking with user from request context"""
+        """Create booking with the room set from validation"""
+        # The room should have been set in the validate method
+        if 'room' not in validated_data:
+            raise serializers.ValidationError("Room information is required")
+        
+        # Set the user from the request context
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
+        
         return super().create(validated_data)
 
 

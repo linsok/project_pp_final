@@ -50,6 +50,11 @@
                             <div class="user-email">your@remail.com</div>
                         </div>
                     </div>
+                    <div class="profile-actions">
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,7 +101,10 @@
                 </div>
                 <div class="privacy-security-edit">
                     <input type="email" class="privacy-security-item-input" id="emailInput">
-                    <button class="save-btn" id="saveEmail">Save</button>
+                    <div class="button-group">
+                        <button class="save-btn" id="saveEmail">Save</button>
+                        <button class="cancel-btn" id="cancelEmail">Cancel</button>
+                    </div>
                 </div>
             </div>
             
@@ -107,7 +115,10 @@
                 </div>
                 <div class="privacy-security-edit">
                     <input type="tel" class="privacy-security-item-input" id="phoneInput">
-                    <button class="save-btn" id="savePhone">Save</button>
+                    <div class="button-group">
+                        <button class="save-btn" id="savePhone">Save</button>
+                        <button class="cancel-btn" id="cancelPhone">Cancel</button>
+                    </div>
                 </div>
             </div>
             
@@ -117,8 +128,13 @@
                     <span class="privacy-security-item-value" id="passwordValue">•••••••</span>
                 </div>
                 <div class="privacy-security-edit">
+                    <input type="password" class="privacy-security-item-input" id="currentPasswordInput" placeholder="Enter current password">
                     <input type="password" class="privacy-security-item-input" id="passwordInput" placeholder="Enter new password">
-                    <button class="save-btn" id="savePassword">Save</button>
+                    <input type="password" class="privacy-security-item-input" id="confirmPasswordInput" placeholder="Confirm new password">
+                    <div class="button-group">
+                        <button class="save-btn" id="savePassword">Save</button>
+                        <button class="cancel-btn" id="cancelPassword">Cancel</button>
+                    </div>
                 </div>
             </div>
             
@@ -129,7 +145,46 @@
                 </div>
                 <div class="privacy-security-edit">
                     <input type="text" class="privacy-security-item-input" id="nameInput">
-                    <button class="save-btn" id="saveName">Save</button>
+                    <div class="button-group">
+                        <button class="save-btn" id="saveName">Save</button>
+                        <button class="cancel-btn" id="cancelName">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="privacy-security-item">
+                <div class="privacy-security-field">
+                    <span class="privacy-security-item-label">Forgot Password</span>
+                    <span class="privacy-security-item-value" id="forgotPasswordValue">Reset your password securely</span>
+                </div>
+                
+                <!-- Step 1: Enter Email -->
+                <div class="privacy-security-edit" id="forgotPasswordStep1">
+                    <input type="email" class="privacy-security-item-input" id="forgotPasswordInput" placeholder="Enter your email address">
+                    <div class="button-group">
+                        <button class="save-btn" id="saveForgotPassword">Send Reset Code</button>
+                        <button class="cancel-btn" id="cancelForgotPassword">Cancel</button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Enter Code -->
+                <div class="privacy-security-edit" id="forgotPasswordStep2" style="display: none;">
+                    <input type="text" class="privacy-security-item-input" id="resetCodeInput" placeholder="Enter the reset code from your email">
+                    <p class="reset-code-info">Check your email for the reset code. <a href="#" id="resendCodeLink">Resend code</a></p>
+                    <div class="button-group">
+                        <button class="save-btn" id="verifyResetCode">Verify Code</button>
+                        <button class="cancel-btn" id="cancelResetCode">Cancel</button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Set New Password -->
+                <div class="privacy-security-edit" id="forgotPasswordStep3" style="display: none;">
+                    <input type="password" class="privacy-security-item-input" id="newPasswordInput" placeholder="Enter new password">
+                    <input type="password" class="privacy-security-item-input" id="confirmNewPasswordInput" placeholder="Confirm new password">
+                    <div class="button-group">
+                        <button class="save-btn" id="setNewPassword">Set New Password</button>
+                        <button class="cancel-btn" id="cancelSetPassword">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -170,6 +225,7 @@
     </div>
 </footer>
     
+    <script src="js/message_system.js"></script>
     <script src="js/privacy_security.js"></script>
     <script src="js/Account_icon.js"></script>
 </body>

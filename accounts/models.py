@@ -10,6 +10,9 @@ class Profile(models.Model):
     # Keep the old image field for backward compatibility during migration
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     
+    # Phone number field
+    phone = models.CharField(max_length=20, blank=True, null=True, help_text="User's phone number")
+    
     # New fields for storing image in database
     image_data = models.BinaryField(blank=True, null=True, help_text="Binary image data stored in database")
     image_name = models.CharField(max_length=255, blank=True, null=True, help_text="Original filename")
