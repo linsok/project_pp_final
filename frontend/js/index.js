@@ -80,12 +80,25 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(data => {
       if (data.key) {
         localStorage.setItem('authToken', data.key);
-        window.location.href = "home.html";
+        fetch('http://localhost:8000/api/profile/', {
+          headers: { 'Authorization': 'Token ' + data.key }
+        })
+        .then(res => res.json())
+        .then(profile => {
+          if (profile.is_staff || profile.is_superuser) {
+            window.location.href = "admin_dashboard.html";
+          } else {
+            window.location.href = "home.html";
+          }
+        });
       } else if (data.non_field_errors) {
         showError('Login failed: ' + data.non_field_errors.join(' '));
       } else {
         showError('Login failed: ' + JSON.stringify(data));
       }
+    })
+    .catch(err => {
+      showError('Network error: Could not reach the server. Please try again later.');
     });
   });
 

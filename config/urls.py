@@ -36,6 +36,22 @@ urlpatterns = [
     # Frontend HTML files
     path('frontend/home.html', TemplateView.as_view(template_name='home.html'), name='home'),
     path('frontend/index.html', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('frontend/admin_dashboard.html', TemplateView.as_view(template_name='admin_dashboard.html'), name='admin_dashboard'),
+    path('frontend/admin_manage_bookings.html', TemplateView.as_view(template_name='admin_manage_bookings.html'), name='admin_manage_bookings'),
+    path('frontend/admin_room_management.html', TemplateView.as_view(template_name='admin_room_management.html'), name='admin_room_management'),
+    path('frontend/admin_settings.html', TemplateView.as_view(template_name='admin_settings.html'), name='admin_settings'),
+    path('frontend/book_room.html', TemplateView.as_view(template_name='book_room.html'), name='book_room'),
+    path('frontend/view_booking.html', TemplateView.as_view(template_name='view_booking.html'), name='view_booking'),
+    path('frontend/available_room.html', TemplateView.as_view(template_name='available_room.html'), name='available_room'),
+    path('frontend/booking_history.html', TemplateView.as_view(template_name='booking_history.html'), name='booking_history'),
+    path('frontend/map.html', TemplateView.as_view(template_name='map.html'), name='map'),
+    path('frontend/setting.html', TemplateView.as_view(template_name='setting.html'), name='setting'),
+    path('frontend/about.html', TemplateView.as_view(template_name='about.html'), name='about'),
+    path('frontend/report.html', TemplateView.as_view(template_name='report.html'), name='report'),
+    path('frontend/privacy_security.html', TemplateView.as_view(template_name='privacy_security.html'), name='privacy_security'),
+    path('frontend/test_login_redirect.html', TemplateView.as_view(template_name='test_login_redirect.html'), name='test_login_redirect'),
+    path('frontend/debug_admin_dashboard.html', TemplateView.as_view(template_name='debug_admin_dashboard.html'), name='debug_admin_dashboard'),
+    path('frontend/admin_login_helper.html', TemplateView.as_view(template_name='admin_login_helper.html'), name='admin_login_helper'),
     path('', TemplateView.as_view(template_name='index.html'), name='root'),
     
     # Frontend static files (CSS, JS, images)

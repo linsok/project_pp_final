@@ -100,34 +100,51 @@
         </div>
 
         <div class="rooms-section">
-            <div class="available-room-header">
-                <h2>Room booking schedule</h2>
-                <div class="selected-date-display">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span id="selectedDateText">Select a date</span>
+            <!-- Schedule Type Toggle Buttons -->
+            <div class="schedule-toggle-container" style="margin-bottom: 30px; text-align: center;">
+                <button class="schedule-toggle-btn active" id="roomScheduleBtn" onclick="showRoomSchedule()">
+                    <i class="fas fa-calendar-day"></i>
+                    Room Booking Schedule
+                </button>
+                <button class="schedule-toggle-btn" id="weeklyScheduleBtn" onclick="showWeeklySchedule()">
+                    <i class="fas fa-calendar-week"></i>
+                    Weekly Booking Schedule
+                </button>
+            </div>
+            
+            <!-- Room Booking Schedule Section -->
+            <div id="roomScheduleSection" class="schedule-section active">
+                <div class="available-room-header">
+                    <h2>Room Booking Schedule</h2>
+                    <div class="selected-date-display">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="selectedDateText">Select a date</span>
+                    </div>
+                </div>
+                
+                <!-- Time-slot table -->
+                <div class="room-availability-container">
+                    <div class="table-scroll-wrapper">
+                        <table class="room-availability-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <!-- Room columns will be dynamically added here -->
+                                </tr>
+                            </thead>
+                            <tbody id="roomAvailabilityBody">
+                                <!-- Time slots will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
-            <!-- Time-slot table -->
-            <div class="room-availability-container">
-                <div class="table-scroll-wrapper">
-                    <table class="room-availability-table">
-                        <thead>
-                            <tr>
-                                <th class="time-column">Time</th>
-                                <!-- Room columns will be dynamically added here -->
-                            </tr>
-                        </thead>
-                        <tbody id="roomAvailabilityBody">
-                            <!-- Time slots will be dynamically added here -->
-                        </tbody>
-                    </table>
+            <!-- Weekly Booking Schedule Section -->
+            <div id="weeklyScheduleSection" class="schedule-section">
+                <div class="available-room-header">
+                    <h2>Weekly Booking Schedule</h2>
                 </div>
-            </div>
-            
-            <!-- Weekly Booking Schedule -->
-            <div class="weekly-schedule-section">
-                <h2>Weekly booking schedule</h2>
                 
                 <!-- Room Selector -->
                 <div class="weekly-room-selector">
@@ -138,6 +155,8 @@
                     </select>
                 </div>
                 
+                <!-- Week Navigation -->
+                <div id="weekNavContainer" style="display: flex; align-items: center; justify-content: center; margin: 10px 0;"></div>
                 <div class="room-availability-container">
                     <div class="table-scroll-wrapper">
                         <table class="weekly-schedule-table">

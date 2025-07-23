@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Room, Booking, ReportProblem
+from .models import Profile, Room, Booking, ReportProblem, NotificationSettings
 from django.contrib.auth.models import User
 from django.db import models
 from datetime import datetime, time, date
@@ -8,10 +8,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.CharField(source='user.email', read_only=True)
     image_url = serializers.SerializerMethodField()
+    is_staff = serializers.SerializerMethodField()
+    is_superuser = serializers.SerializerMethodField()
     
     class Meta:
         model = Profile
-        fields = ['image', 'image_url', 'username', 'email', 'phone']
+        fields = ['image', 'image_url', 'username', 'email', 'phone', 'is_staff', 'is_superuser']
         
     def get_image_url(self, obj):
         """Return image URL - either from database or file system"""
@@ -27,6 +29,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             return obj.image.url
         
         return None
+
+    def get_is_staff(self, obj):
+        return obj.user.is_staff
+
+    def get_is_superuser(self, obj):
+        return obj.user.is_superuser
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -178,6 +186,23 @@ class ReportProblemSerializer(serializers.ModelSerializer):
         model = ReportProblem
         fields = ['id', 'description', 'created_at', 'username']
         read_only_fields = ['id', 'created_at', 'username']
+    
+    def create(self, validated_data):
+        # Set the user from the request context
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
+
+
+class NotificationSettingsSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = NotificationSettings
+        fields = ['id', 'username', 'email_notifications', 'booking_alerts', 
+                 'system_alerts', 'notification_email', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'username', 'created_at', 'updated_at']
     
     def create(self, validated_data):
         # Set the user from the request context

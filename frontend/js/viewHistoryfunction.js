@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadBookingHistory() {
         try {
-            console.log('Loading booking history...');
+            console.log('Loading booking history (confirmed and cancelled only)...');
             
-            const response = await fetch('http://localhost:8000/api/bookings/my/', {
+            const response = await fetch('http://localhost:8000/api/bookings/history/', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -59,10 +59,14 @@ document.addEventListener('DOMContentLoaded', function() {
             container.innerHTML = `
                 <div class="no-bookings" style="text-align: center; padding: 60px 20px; color: #64748b;">
                     <i class="fas fa-calendar-times" style="font-size: 4rem; margin-bottom: 20px; color: #cbd5e1;"></i>
-                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #374151;">No Bookings Found</h3>
-                    <p style="margin-bottom: 20px; font-size: 1.1rem;">You haven't made any bookings yet.</p>
-                    <a href="book_room.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #07203f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
-                        <i class="fas fa-plus"></i> Make Your First Booking
+                    <h3 style="font-size: 1.5rem; margin-bottom: 10px; color: #374151;">No Confirmed or Cancelled Bookings</h3>
+                    <p style="margin-bottom: 20px; font-size: 1.1rem;">You don't have any confirmed or cancelled bookings yet.</p>
+                    <p style="margin-bottom: 20px; font-size: 1rem; color: #94a3b8;">Check "View Bookings" to see all your bookings including pending ones.</p>
+                    <a href="view_booking.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #07203f; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-right: 10px;">
+                        <i class="fas fa-eye"></i> View All Bookings
+                    </a>
+                    <a href="book_room.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #7bdc00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                        <i class="fas fa-plus"></i> Make New Booking
                     </a>
                 </div>
             `;
@@ -73,7 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = `
             <div class="booking-stats" style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #07203f, #2c5282); border-radius: 10px; color: white;">
                 <h2 style="font-size: 2rem; margin-bottom: 10px; font-weight: 600;">Your Booking History</h2>
-                <p style="font-size: 1.1rem; opacity: 0.9;">Total bookings: ${bookings.length}</p>
+                <p style="font-size: 1.1rem; opacity: 0.9;">Showing confirmed and cancelled bookings: ${bookings.length}</p>
+                <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Pending bookings are shown in "View Bookings"</p>
+                <a href="view_booking.html" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 500; margin-top: 10px; transition: background-color 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <i class="fas fa-eye"></i> View All Bookings
+                </a>
             </div>
             
             <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); overflow: hidden; overflow-x: auto;">

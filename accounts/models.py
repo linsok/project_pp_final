@@ -58,6 +58,7 @@ class Room(models.Model):
     roomType = models.CharField(max_length=50)
     buildingName = models.CharField(max_length=100, blank=True, null=True)
     floorName = models.CharField(max_length=100, blank=True, null=True)
+    is_active = models.BooleanField(default=True, help_text="Whether the room is available for booking")
 
     def __str__(self):
         return f"{self.roomNumber} - {self.buildingName} ({self.roomType})"
@@ -143,3 +144,35 @@ class ReportProblem(models.Model):
 
     def __str__(self):
         return f"Report by {self.user.username if self.user else 'Anonymous'} at {self.created_at}"
+
+
+class NotificationSettings(models.Model):
+    """Model to store admin notification preferences"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_settings')
+    email_notifications = models.BooleanField(default=True, help_text="Enable email notifications")
+    booking_alerts = models.BooleanField(default=True, help_text="Receive alerts for new bookings")
+    system_alerts = models.BooleanField(default=True, help_text="Receive system alerts and maintenance notifications")
+    notification_email = models.EmailField(default="admin@rupp.edu.kh", help_text="Email address for notifications")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Notification Setting"
+        verbose_name_plural = "Notification Settings"
+    
+    def __str__(self):
+        return f"Notification settings for {self.user.username}"
+    
+    @classmethod
+    def get_or_create_for_user(cls, user):
+        """Get notification settings for user or create default ones"""
+        settings, created = cls.objects.get_or_create(
+            user=user,
+            defaults={
+                'email_notifications': True,
+                'booking_alerts': True,
+                'system_alerts': True,
+                'notification_email': user.email or "admin@rupp.edu.kh"
+            }
+        )
+        return settings

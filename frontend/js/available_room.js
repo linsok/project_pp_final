@@ -54,7 +54,31 @@ document.addEventListener('DOMContentLoaded', function() {
     renderCalendar();
     updateSelectedDateDisplay();
     initializeWeeklySchedule();
+    
+    // Set default view to room schedule
+    showRoomSchedule();
 });
+
+// Schedule Toggle Functions
+function showRoomSchedule() {
+    // Update button states
+    document.getElementById('roomScheduleBtn').classList.add('active');
+    document.getElementById('weeklyScheduleBtn').classList.remove('active');
+    
+    // Show/hide sections
+    document.getElementById('roomScheduleSection').classList.add('active');
+    document.getElementById('weeklyScheduleSection').classList.remove('active');
+}
+
+function showWeeklySchedule() {
+    // Update button states
+    document.getElementById('weeklyScheduleBtn').classList.add('active');
+    document.getElementById('roomScheduleBtn').classList.remove('active');
+    
+    // Show/hide sections
+    document.getElementById('weeklyScheduleSection').classList.add('active');
+    document.getElementById('roomScheduleSection').classList.remove('active');
+}
 
 // Load rooms from the database
 async function loadRoomsFromDatabase() {
@@ -125,12 +149,14 @@ function generateSampleBookings(date) {
     // Only add bookings for today and future dates
     if (date >= today.setHours(0, 0, 0, 0)) {
         // Add some random bookings
+        const purposes = ['Team Meeting', 'Project Discussion', 'Interview', 'Workshop', 'Seminar', 'Training', 'Club Activity', 'Presentation', 'Research Group', 'Faculty Meeting'];
         if (Math.random() > 0.5) {
             bookings.push({
                 room_id: allRooms[0]?.id,
                 start_time: '09:00',
                 end_time: '10:00',
-                status: 'confirmed'
+                status: 'confirmed',
+                purpose: purposes[Math.floor(Math.random() * purposes.length)]
             });
         }
         if (Math.random() > 0.7) {
@@ -138,7 +164,8 @@ function generateSampleBookings(date) {
                 room_id: allRooms[1]?.id,
                 start_time: '14:00',
                 end_time: '15:00',
-                status: 'confirmed'
+                status: 'confirmed',
+                purpose: purposes[Math.floor(Math.random() * purposes.length)]
             });
         }
     }
@@ -249,9 +276,10 @@ function renderRoomAvailabilityTable() {
             roomCell.className = 'room-cell';
             
             // Check if room is booked at this time
-            const isBooked = roomBookings.some(booking => 
+            const booking = roomBookings.find(booking => 
                 booking.room_id === room.id && 
-                booking.start_time === timeSlot.start
+                booking.start_time === timeSlot.start &&
+                booking.status === "confirmed"
             );
             
             // Check if the time slot is in the past
@@ -265,9 +293,11 @@ function renderRoomAvailabilityTable() {
             if (isPast) {
                 roomCell.className += ' unavailable';
                 roomCell.innerHTML = '<small style="opacity: 0.6;">Past</small>';
-            } else if (isBooked) {
+            } else if (booking) {
                 roomCell.className += ' booked';
-                roomCell.innerHTML = '<small style="font-weight: 600;">Booked</small>';
+                let agenda = booking.purpose || booking.meetingAgenda || booking.agenda || '';
+                let agendaHtml = agenda ? `<div class='booking-purpose' style='font-size: 0.85em; color: #333; margin-top: 2px; word-break: break-word;'><i class="fas fa-info-circle" style="color:#007bff;"></i> ${agenda}</div>` : '';
+                roomCell.innerHTML = `<small style='font-weight: 600;'>Booked</small>${agendaHtml}`;
             } else {
                 roomCell.className += ' available';
                 roomCell.innerHTML = `
@@ -301,7 +331,13 @@ function previousMonth() {
         currentMonth = 11;
         currentYear--;
     }
+    // If selectedDate is not in the new month, select the 1st
+    if (selectedDate.getMonth() !== currentMonth || selectedDate.getFullYear() !== currentYear) {
+        selectedDate = new Date(currentYear, currentMonth, 1);
+    }
     renderCalendar();
+    updateSelectedDateDisplay();
+    loadBookingsForDate(selectedDate).then(renderRoomAvailabilityTable);
 }
 
 function nextMonth() {
@@ -310,7 +346,13 @@ function nextMonth() {
         currentMonth = 0;
         currentYear++;
     }
+    // If selectedDate is not in the new month, select the 1st
+    if (selectedDate.getMonth() !== currentMonth || selectedDate.getFullYear() !== currentYear) {
+        selectedDate = new Date(currentYear, currentMonth, 1);
+    }
     renderCalendar();
+    updateSelectedDateDisplay();
+    loadBookingsForDate(selectedDate).then(renderRoomAvailabilityTable);
 }
 
 // Book room function
@@ -368,6 +410,45 @@ function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, da
 
 // Weekly Schedule Functions
 
+// Add week navigation
+function goToPreviousWeek() {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    updateWeeklyScheduleUI(true);
+}
+
+function goToNextWeek() {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    updateWeeklyScheduleUI(true);
+}
+
+function updateWeeklyScheduleUI(preserveRoomSelection = false) {
+    const roomSelect = document.getElementById('weeklyRoomSelect');
+    let selectedRoomId = roomSelect && roomSelect.value ? roomSelect.value : '';
+    populateWeeklyRoomSelector(); // repopulate in case room list changes
+    loadWeeklyBookings();
+    // Restore previous selection if needed
+    if (preserveRoomSelection && roomSelect && selectedRoomId) {
+        roomSelect.value = selectedRoomId;
+    }
+    // If a room is selected, re-render the schedule
+    if (roomSelect && roomSelect.value) {
+        renderWeeklySchedule(parseInt(roomSelect.value));
+    } else {
+        document.getElementById('weeklyScheduleBody').innerHTML = '';
+    }
+    // Update week label
+    updateWeekLabel();
+}
+
+function updateWeekLabel() {
+    const weekLabel = document.getElementById('weekLabel');
+    if (!weekLabel) return;
+    const monday = new Date(currentWeekStart);
+    const sunday = new Date(currentWeekStart);
+    sunday.setDate(monday.getDate() + 5); // Saturday
+    weekLabel.textContent = `${monday.toLocaleDateString()} - ${sunday.toLocaleDateString()}`;
+}
+
 // Initialize weekly schedule
 function initializeWeeklySchedule() {
     // Set current week start to Monday
@@ -378,8 +459,25 @@ function initializeWeeklySchedule() {
     currentWeekStart.setDate(today.getDate() + mondayOffset);
     currentWeekStart.setHours(0, 0, 0, 0);
     
-    populateWeeklyRoomSelector();
-    loadWeeklyBookings();
+    // Add week navigation buttons if not already present
+    const weekNavContainer = document.getElementById('weekNavContainer');
+    if (weekNavContainer && weekNavContainer.children.length === 0) {
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+        prevBtn.onclick = goToPreviousWeek;
+        weekNavContainer.appendChild(prevBtn);
+        
+        const weekLabel = document.createElement('span');
+        weekLabel.id = 'weekLabel';
+        weekLabel.style.margin = '0 10px';
+        weekNavContainer.appendChild(weekLabel);
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
+        nextBtn.onclick = goToNextWeek;
+        weekNavContainer.appendChild(nextBtn);
+    }
+    updateWeeklyScheduleUI();
 }
 
 // Populate room selector dropdown
@@ -426,6 +524,7 @@ function generateSampleWeeklyBookings() {
     const bookings = [];
     const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
+    const purposes = ['Class Lecture', 'Group Study', 'Faculty Meeting', 'Club Event', 'Workshop', 'Seminar', 'Training', 'Presentation', 'Research Group', 'Interview'];
     allRooms.forEach(room => {
         daysOfWeek.forEach((day, dayIndex) => {
             // Add some random bookings for demonstration
@@ -438,7 +537,8 @@ function generateSampleWeeklyBookings() {
                     start_time: timeSlots[randomTimeIndex].start,
                     end_time: timeSlots[randomTimeIndex].end,
                     status: 'confirmed',
-                    user: 'Sample User'
+                    user: 'Sample User',
+                    purpose: purposes[Math.floor(Math.random() * purposes.length)]
                 });
             }
         });
@@ -474,10 +574,11 @@ function renderWeeklySchedule(roomId) {
             dayCell.className = 'day-cell';
             
             // Check if room is booked at this time on this day
-            const isBooked = weeklyBookings.some(booking => 
+            const booking = weeklyBookings.find(booking => 
                 booking.room_id === roomId && 
                 booking.day === day &&
-                booking.start_time === timeSlot.start
+                booking.start_time === timeSlot.start &&
+                booking.status === "confirmed"
             );
             
             // Get the date for this day
@@ -495,9 +596,12 @@ function renderWeeklySchedule(roomId) {
             if (isPast) {
                 dayCell.className += ' unavailable';
                 dayCell.innerHTML = '<small style="opacity: 0.6;">Past</small>';
-            } else if (isBooked) {
+            } else if (booking) {
                 dayCell.className += ' booked';
-                dayCell.innerHTML = '<small style="font-weight: 600;">Booked</small>';
+                // Show 'Booked' and the purpose/agenda if available
+                let agenda = booking.meetingAgenda || booking.purpose || booking.agenda || '';
+                let agendaHtml = agenda ? `<div class='booking-purpose' style='font-size: 0.85em; color: #333; margin-top: 2px; word-break: break-word;'><i class="fas fa-info-circle" style="color:#007bff;"></i> ${agenda}</div>` : '';
+                dayCell.innerHTML = `<div style='font-weight:600;'>Booked</div>${agendaHtml}`;
             } else {
                 dayCell.className += ' available';
                 dayCell.innerHTML = `

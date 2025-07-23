@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Notification Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Notification Test</h1>
+    
+    <div class="debug-section">
+        <h3>1. Check Authentication</h3>
+        <button onclick="checkAuth()">Check Auth Token</button>
+        <div id="authStatus" class="status"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>2. Test Notification Settings</h3>
+        <button onclick="testGetSettings()">Get Settings</button>
+        <button onclick="testUpdateSettings()">Update Settings</button>
+        <div id="settingsStatus" class="status"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>3. Test Email Sending</h3>
+        <button onclick="testSendEmail()">Send Test Email</button>
+        <div id="emailStatus" class="status"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>4. Test Booking Creation</h3>
+        <button onclick="testBookingCreation()">Create Test Booking</button>
+        <div id="bookingStatus" class="status"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>5. Console Log</h3>
+        <div id="consoleLog" style="background: #f8f9fa; padding: 10px; height: 200px; overflow-y: scroll; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const consoleLog = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleLog.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+            console.log(message);
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const status = document.getElementById('authStatus');
+            
+            if (token) {
+                status.className = 'status success';
+                status.textContent = `✅ Token found: ${token.substring(0, 20)}...`;
+                log('Auth token found');
+            } else {
+                status.className = 'status error';
+                status.textContent = '❌ No auth token found. Please login first.';
+                log('No auth token found');
+            }
+        }
+
+        async function testGetSettings() {
+            const token = localStorage.getItem('authToken');
+            const status = document.getElementById('settingsStatus');
+            
+            if (!token) {
+                status.className = 'status error';
+                status.textContent = '❌ Please login first';
+                return;
+            }
+
+            try {
+                log('Fetching notification settings...');
+                const response = await fetch('http://localhost:8000/api/notifications/settings/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'status success';
+                    status.innerHTML = `
+                        ✅ Settings loaded:<br>
+                        Email Notifications: ${data.email_notifications}<br>
+                        Booking Alerts: ${data.booking_alerts}<br>
+                        System Alerts: ${data.system_alerts}<br>
+                        Notification Email: ${data.notification_email}
+                    `;
+                    log('Notification settings loaded successfully');
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = `❌ Failed to load settings: ${JSON.stringify(error)}`;
+                    log('Failed to load notification settings');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                log(`Error loading settings: ${error.message}`);
+            }
+        }
+
+        async function testUpdateSettings() {
+            const token = localStorage.getItem('authToken');
+            const status = document.getElementById('settingsStatus');
+            
+            if (!token) {
+                status.className = 'status error';
+                status.textContent = '❌ Please login first';
+                return;
+            }
+
+            try {
+                log('Updating notification settings...');
+                const settingsData = {
+                    email_notifications: true,
+                    booking_alerts: true,
+                    system_alerts: true,
+                    notification_email: 'test@example.com'
+                };
+
+                const response = await fetch('http://localhost:8000/api/notifications/settings/update/', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settingsData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'status success';
+                    status.textContent = '✅ Settings updated successfully';
+                    log('Notification settings updated successfully');
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = `❌ Failed to update settings: ${JSON.stringify(error)}`;
+                    log('Failed to update notification settings');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                log(`Error updating settings: ${error.message}`);
+            }
+        }
+
+        async function testSendEmail() {
+            const token = localStorage.getItem('authToken');
+            const status = document.getElementById('emailStatus');
+            
+            if (!token) {
+                status.className = 'status error';
+                status.textContent = '❌ Please login first';
+                return;
+            }
+
+            try {
+                log('Sending test email...');
+                const response = await fetch('http://localhost:8000/api/notifications/test-email/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'status success';
+                    status.textContent = `✅ Test email sent successfully to ${data.email}`;
+                    log('Test email sent successfully');
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = `❌ Failed to send test email: ${JSON.stringify(error)}`;
+                    log('Failed to send test email');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                log(`Error sending test email: ${error.message}`);
+            }
+        }
+
+        async function testBookingCreation() {
+            const token = localStorage.getItem('authToken');
+            const status = document.getElementById('bookingStatus');
+            
+            if (!token) {
+                status.className = 'status error';
+                status.textContent = '❌ Please login first';
+                return;
+            }
+
+            try {
+                log('Creating test booking...');
+                const bookingData = {
+                    room_number: 'A101',
+                    building_name: 'Building A',
+                    booking_date: '2025-01-20',
+                    start_time: '09:00',
+                    end_time: '10:00',
+                    purpose: 'Test booking for email notification'
+                };
+
+                const response = await fetch('http://localhost:8000/api/bookings/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'status success';
+                    status.textContent = `✅ Test booking created successfully! ID: ${data.id}`;
+                    log('Test booking created successfully');
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = `❌ Failed to create test booking: ${JSON.stringify(error)}`;
+                    log('Failed to create test booking');
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Error: ${error.message}`;
+                log(`Error creating test booking: ${error.message}`);
+            }
+        }
+
+        // Auto-check auth on page load
+        window.addEventListener('load', function() {
+            log('Debug page loaded');
+            checkAuth();
+        });
+    </script>
+</body>
+</html> 

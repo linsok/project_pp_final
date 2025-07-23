@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", function () {
         `).join('');
 
         // Show modal
-        modal.style.display = 'block';
+        modal.classList.add('show');
         document.body.style.overflow = 'hidden'; // Prevent scrolling
 
         // Handle confirm button
@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'block') {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
                 hideBookingConfirmationModal();
             }
         });
@@ -536,7 +536,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to hide booking confirmation modal
     function hideBookingConfirmationModal() {
         const modal = document.getElementById('bookingConfirmationModal');
-        modal.style.display = 'none';
+        modal.classList.remove('show');
         document.body.style.overflow = ''; // Restore scrolling
     }
 
@@ -612,7 +612,7 @@ document.addEventListener("DOMContentLoaded", function () {
         messageEl.textContent = message;
 
         // Show modal
-        modal.style.display = 'block';
+        modal.classList.add('show');
         document.body.style.overflow = 'hidden';
 
         // Remove existing event listeners
@@ -649,7 +649,7 @@ document.addEventListener("DOMContentLoaded", function () {
         messageEl.textContent = message;
 
         // Show modal
-        modal.style.display = 'block';
+        modal.classList.add('show');
         document.body.style.overflow = 'hidden';
 
         // Remove existing event listeners
@@ -670,7 +670,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'block') {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
                 hideErrorModal();
             }
         });
@@ -679,14 +679,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to hide error modal
     function hideErrorModal() {
         const modal = document.getElementById('errorModal');
-        modal.style.display = 'none';
+        modal.classList.remove('show');
         document.body.style.overflow = '';
     }
 
     // Function to hide success modal
     function hideSuccessModal() {
         const modal = document.getElementById('successModal');
-        modal.style.display = 'none';
+        modal.classList.remove('show');
         document.body.style.overflow = '';
     }
 });
