@@ -93,13 +93,27 @@
                 <!-- Recent Bookings Table -->
                 <div class="table-content active" id="recent-bookings" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
                     <div class="table-header" style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #dee2e6;">
-                        <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-calendar-alt"></i> Recent Bookings
-                        </h3>
-                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Latest booking activities in the system</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-calendar-alt"></i> Recent Bookings
+                                </h3>
+                                <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Latest booking activities in the system</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="statusFilter" onchange="filterTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                                    <option value="">All Statuses</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                                <input type="date" id="dateFilter" onchange="filterTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                            </div>
+                        </div>
                     </div>
                     <div class="table-container" style="overflow-x: auto;">
-                        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <table id="recent-bookings-table" class="data-table" style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #07203F; color: white;">
                                     <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">User</th>
@@ -126,13 +140,25 @@
                 <!-- Users Table -->
                 <div class="table-content" id="users" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; display: none;">
                     <div class="table-header" style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #dee2e6;">
-                        <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-users"></i> System Users
-                        </h3>
-                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">All registered users in the system</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-users"></i> System Users
+                                </h3>
+                                <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">All registered users in the system</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="roleFilter" onchange="filterUsersTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                                <input type="date" id="joinDateFilter" onchange="filterUsersTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                            </div>
+                        </div>
                     </div>
                     <div class="table-container" style="overflow-x: auto;">
-                        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <table id="users-table" class="data-table" style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #07203F; color: white;">
                                     <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Username</th>
@@ -222,7 +248,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
+            <p>Copyright 2023 CJBAR RUPP, All rights reserved.</p>
         </div>
     </footer>
     <script>
@@ -522,41 +548,128 @@
             tbody.innerHTML = html;
         }
         
-        // Function to show demo data
-        function showDemoData(tableType) {
-            const tbody = document.getElementById(`${tableType}-tbody`);
+        // Function to filter table data
+        function filterTable() {
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value; // YYYY-MM-DD format
             
-            if (!tbody) return;
+            // Get all table rows in the tbody (skip the header row)
+            const rows = document.querySelectorAll('#recent-bookings-table tbody tr');
+            let hasVisibleRows = false;
             
-            let html = '';
-            
-            switch(tableType) {
-                case 'recent-bookings':
-                    const demoBookings = [
-                        { id: 1, user_name: 'John Doe', room_details: { roomNumber: 'A101', buildingName: 'Building A' }, booking_date: '2024-01-15', start_time: '09:00', end_time: '11:00', purpose: 'Study Group', status: 'confirmed' },
-                        { id: 2, user_name: 'Jane Smith', room_details: { roomNumber: 'B205', buildingName: 'Building B' }, booking_date: '2024-01-15', start_time: '14:00', end_time: '16:00', purpose: 'Meeting', status: 'pending' },
-                        { id: 3, user_name: 'Mike Johnson', room_details: { roomNumber: 'C301', buildingName: 'Building C' }, booking_date: '2024-01-16', start_time: '10:00', end_time: '12:00', purpose: 'Presentation', status: 'confirmed' }
-                    ];
-                    populateTable(tableType, demoBookings);
-                    break;
+            rows.forEach(row => {
+                if (row.cells.length < 6) return; // Skip rows that don't have enough cells
+                
+                const statusCell = row.cells[5]; // 6th column (0-based index)
+                const dateCell = row.cells[2];   // 3rd column (0-based index)
+                
+                try {
+                    const status = statusCell.textContent.trim().toLowerCase();
+                    const dateText = dateCell.textContent.trim();
                     
-                case 'users':
-                    const demoUsers = [
-                        { username: 'admin', email: 'admin@rupp.edu.kh', phone: '+855 123 456 789', is_staff: true, date_joined: '2023-01-01' },
-                        { username: 'john_doe', email: 'john@rupp.edu.kh', phone: '+855 987 654 321', is_staff: false, date_joined: '2023-02-15' },
-                        { username: 'jane_smith', email: 'jane@rupp.edu.kh', phone: '+855 555 123 456', is_staff: false, date_joined: '2023-03-20' }
-                    ];
-                    populateTable(tableType, demoUsers);
-                    break;
+                    // Check if this row matches all active filters
+                    const matchesStatus = !statusFilter || status.includes(statusFilter);
+                    const matchesDate = !dateFilter || compareDates(dateText, dateFilter);
                     
-                case 'rooms':
-                    const demoRooms = [
-                        { id: 1, roomNumber: 'A101', buildingName: 'Building A', floorName: '1st Floor', roomType: 'Study Room', capacity: 20, availability_status: { is_available: true } },
-                        { id: 2, roomNumber: 'B205', buildingName: 'Building B', floorName: '2nd Floor', roomType: 'Meeting Room', capacity: 15, availability_status: { is_available: false } },
-                        { id: 3, roomNumber: 'C301', buildingName: 'Building C', floorName: '3rd Floor', roomType: 'Conference Room', capacity: 50, availability_status: { is_available: true } }
-                    ];
-                    populateTable(tableType, demoRooms);
-                    break;
+                    // Show or hide the row based on filter matches
+                    const shouldShow = matchesStatus && matchesDate;
+                    row.style.display = shouldShow ? '' : 'none';
+                    
+                    if (shouldShow) hasVisibleRows = true;
+                    
+                } catch (e) {
+                    console.error('Error filtering row:', e, row);
+                    row.style.display = 'none'; // Hide rows that cause errors
+                }
+            });
+            
+            // Show/hide no results message
+            const noResultsRow = document.getElementById('no-results-row');
+            if (!hasVisibleRows) {
+                if (!noResultsRow) {
+                    const tbody = document.querySelector('#recent-bookings-table tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'no-results-row';
+                    newRow.innerHTML = `
+                        <td colspan="7" style="padding: 40px; text-align: center; color: #6c757d;">
+                            <i class="fas fa-search" style="font-size: 1.5em; margin-bottom: 10px; color: #6c757d;"></i>
+                            <br>No bookings match the selected filters
+                        </td>`;
+                    tbody.appendChild(newRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+        
+        // Function to filter users table
+        function filterUsersTable() {
+            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+            const joinDateFilter = document.getElementById('joinDateFilter').value; // YYYY-MM-DD format
+            
+            // Get all table rows in the tbody (skip the header row)
+            const rows = document.querySelectorAll('#users-table tbody tr');
+            let hasVisibleRows = false;
+            
+            rows.forEach(row => {
+                if (row.cells.length < 6) return; // Skip rows that don't have enough cells
+                
+                const roleCell = row.cells[3]; // 4th column (0-based index)
+                const joinDateCell = row.cells[4]; // 5th column (0-based index)
+                
+                try {
+                    const role = roleCell.textContent.trim().toLowerCase();
+                    const joinDateText = joinDateCell.textContent.trim();
+                    
+                    // Check if this row matches all active filters
+                    const matchesRole = !roleFilter || role === roleFilter;
+                    const matchesJoinDate = !joinDateFilter || compareDates(joinDateText, joinDateFilter);
+                    
+                    // Show or hide the row based on filter matches
+                    const shouldShow = matchesRole && matchesJoinDate;
+                    row.style.display = shouldShow ? '' : 'none';
+                    
+                    if (shouldShow) hasVisibleRows = true;
+                    
+                } catch (e) {
+                    console.error('Error filtering user row:', e, row);
+                    row.style.display = 'none'; // Hide rows that cause errors
+                }
+            });
+            
+            // Show/hide no results message
+            const noResultsRow = document.getElementById('no-users-results-row');
+            if (!hasVisibleRows) {
+                if (!noResultsRow) {
+                    const tbody = document.querySelector('#users-table tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'no-users-results-row';
+                    newRow.innerHTML = `
+                        <td colspan="6" style="padding: 40px; text-align: center; color: #6c757d;">
+                            <i class="fas fa-search" style="font-size: 1.5em; margin-bottom: 10px; color: #6c757d;"></i>
+                            <br>No users match the selected filters
+                        </td>`;
+                    tbody.appendChild(newRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+        
+        // Helper function to compare dates in different formats
+        function compareDates(tableDate, inputDate) {
+            try {
+                // Convert table date (e.g., "Jan 15, 2024") to Date object
+                const tableDateObj = new Date(tableDate);
+                const inputDateObj = new Date(inputDate);
+                
+                // Compare year, month, and day
+                return tableDateObj.getFullYear() === inputDateObj.getFullYear() &&
+                       tableDateObj.getMonth() === inputDateObj.getMonth() &&
+                       tableDateObj.getDate() === inputDateObj.getDate();
+            } catch (e) {
+                console.error('Error comparing dates:', e, {tableDate, inputDate});
+                return false;
             }
         }
         
@@ -605,7 +718,79 @@
             alert(`Edit room ${id} - Redirect to edit room page`);
         }
         
+        // Function to show demo data
+        function showDemoData(tableType) {
+            const tbody = document.getElementById(`${tableType}-tbody`);
+            
+            if (!tbody) return;
+            
+            let html = '';
+            
+            switch(tableType) {
+                case 'recent-bookings':
+                    const demoBookings = [
+                        { id: 1, user_name: 'John Doe', room_details: { roomNumber: 'A101', buildingName: 'Building A' }, booking_date: '2024-01-15', start_time: '09:00', end_time: '11:00', purpose: 'Study Group', status: 'confirmed' },
+                        { id: 2, user_name: 'Jane Smith', room_details: { roomNumber: 'B205', buildingName: 'Building B' }, booking_date: '2024-01-15', start_time: '14:00', end_time: '16:00', purpose: 'Meeting', status: 'pending' },
+                        { id: 3, user_name: 'Mike Johnson', room_details: { roomNumber: 'C301', buildingName: 'Building C' }, booking_date: '2024-01-16', start_time: '10:00', end_time: '12:00', purpose: 'Presentation', status: 'confirmed' }
+                    ];
+                    populateTable(tableType, demoBookings);
+                    break;
+                    
+                case 'users':
+                    const demoUsers = [
+                        { username: 'admin', email: 'admin@rupp.edu.kh', phone: '+855 123 456 789', is_staff: true, date_joined: '2023-01-01' },
+                        { username: 'john_doe', email: 'john@rupp.edu.kh', phone: '+855 987 654 321', is_staff: false, date_joined: '2023-02-15' },
+                        { username: 'jane_smith', email: 'jane@rupp.edu.kh', phone: '+855 555 123 456', is_staff: false, date_joined: '2023-03-20' }
+                    ];
+                    populateTable(tableType, demoUsers);
+                    break;
+                    
+                case 'rooms':
+                    const demoRooms = [
+                        { id: 1, roomNumber: 'A101', buildingName: 'Building A', floorName: '1st Floor', roomType: 'Study Room', capacity: 20, availability_status: { is_available: true } },
+                        { id: 2, roomNumber: 'B205', buildingName: 'Building B', floorName: '2nd Floor', roomType: 'Meeting Room', capacity: 15, availability_status: { is_available: false } },
+                        { id: 3, roomNumber: 'C301', buildingName: 'Building C', floorName: '3rd Floor', roomType: 'Conference Room', capacity: 50, availability_status: { is_available: true } }
+                    ];
+                    populateTable(tableType, demoRooms);
+                    break;
+            }
+            
+            tbody.innerHTML = html;
+        }
+        
         // Dashboard data loads automatically when page loads
+    </script>
+    <script>
+        // Update the tab switching to reset filters when changing tabs
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Hide all table contents
+                document.querySelectorAll('.table-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.style.background = '#6c757d';
+                });
+                
+                // Show selected table and set button as active
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+                this.style.background = '#07203F';
+                
+                // Reset filters when switching tabs
+                if (tabId === 'recent-bookings') {
+                    document.getElementById('statusFilter').value = '';
+                    document.getElementById('dateFilter').value = '';
+                    filterTable();
+                } else if (tabId === 'users') {
+                    document.getElementById('roleFilter').value = '';
+                    document.getElementById('joinDateFilter').value = '';
+                    filterUsersTable();
+                }
+            });
+        });
     </script>
 </body>
 </html>
