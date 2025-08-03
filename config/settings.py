@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -154,14 +155,19 @@ TEMPLATES = [
         },
     },
 ]
+import os
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = [
     BASE_DIR / 'frontend',
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+DEBUG = False
+ALLOWED_HOSTS = ['RUPPbookingRoom.onrender.com']  # Replace with your Render app name
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
