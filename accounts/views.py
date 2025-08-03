@@ -1433,7 +1433,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def bookings_by_date(request, date_str):
     """Return all bookings for all rooms for a specific date (YYYY-MM-DD)"""
     try:
@@ -1445,7 +1445,7 @@ def bookings_by_date(request, date_str):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def bookings_by_week(request, week_start_str):
     """Return all bookings for all rooms for a week starting from the given date (YYYY-MM-DD, should be Monday)"""
     try:

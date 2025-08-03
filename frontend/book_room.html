@@ -91,7 +91,12 @@
     <main>
         <div class="form-container">
             <h1 class="page-heading">Booking Form</h1>
-            <h2 class="form-title">Please complete the form below to reserve a room</h2>
+            <h2 class="form-title">Please complete the form below to reserve a room</h2
+
+            <!-- Booking summary auto-filled from available room selection -->
+            <div id="bookingSummary" style="background:#f8f9fa;padding:10px 15px;margin-bottom:15px;border-radius:6px;border:1px solid #e0e0e0;display:none;font-weight:500;font-size:1.1em;">
+              <span id="summaryRoom"></span> | <span id="summaryDate"></span> | <span id="summaryTime"></span>
+            </div>
 
             <form>
                 <div class="form-group">

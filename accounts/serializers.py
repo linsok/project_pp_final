@@ -87,14 +87,14 @@ class RoomSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     room_details = RoomSerializer(source='room', read_only=True)
     user_name = serializers.CharField(source='user.username', read_only=True)
-    
+    room_id = serializers.PrimaryKeyRelatedField(source='room', read_only=True)
     # Accept room_number and building_name instead of room ID
     room_number = serializers.CharField(write_only=True, required=False)
     building_name = serializers.CharField(write_only=True, required=False)
     
     class Meta:
         model = Booking
-        fields = ['id', 'room_details', 'user_name', 'booking_date', 
+        fields = ['id', 'room_details', 'room_id', 'user_name', 'booking_date', 
                  'start_time', 'end_time', 'purpose', 'status', 'created_at',
                  'room_number', 'building_name']
         

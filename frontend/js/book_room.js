@@ -80,16 +80,27 @@ document.addEventListener("DOMContentLoaded", function () {
             if (date) {
                 const [year, month, day] = date.split("-");
                 document.getElementById("year").value = year;
-                document.getElementById("month").value = parseInt(month) - 1; // Months are 0-indexed
-                document.getElementById("day").value = parseInt(day);
-            }
-
-            // Auto-fill time
-            if (startTime) {
-                document.getElementById("timeFrom").value = startTime;
-            }
-            if (endTime) {
-                document.getElementById("timeTo").value = endTime;
+                document.getElementById("month").value = String(parseInt(month) - 1); // Months are 0-indexed, ensure string
+                document.getElementById("day").value = String(Number(day));
+                // Auto-fill time if present
+                if (startTime) {
+                    document.getElementById("timeFrom").value = startTime;
+                } else if (params.has("startTime")) {
+                    document.getElementById("timeFrom").value = params.get("startTime");
+                }
+                if (endTime) {
+                    document.getElementById("timeTo").value = endTime;
+                } else if (params.has("endTime")) {
+                    document.getElementById("timeTo").value = params.get("endTime");
+                }
+                // Extra debug: log what is set in the form
+                console.log('[BOOK_ROOM DEBUG] Form values set:', {
+                  year: document.getElementById("year").value,
+                  month: document.getElementById("month").value,
+                  day: document.getElementById("day").value,
+                  timeFrom: document.getElementById("timeFrom").value,
+                  timeTo: document.getElementById("timeTo").value
+                });
             }
         }
         // Handle legacy parameters (for backward compatibility)
@@ -209,21 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (fromTime) timeFromInput.value = fromTime;
     if (toTime) timeToInput.value = toTime;
 
-    if (!fromTime && !toTime) {
-        const now = new Date();
-        let minutes = now.getMinutes();
-        let roundedMinutes = minutes <= 30 ? 30 : 0;
-        if (roundedMinutes === 0) now.setHours(now.getHours() + 1);
-        now.setMinutes(roundedMinutes, 0, 0);
-
-        const pad = (n) => String(n).padStart(2, '0');
-        const defaultFrom = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-        const to = new Date(now.getTime() + 60 * 60 * 1000);
-        const defaultTo = `${pad(to.getHours())}:${pad(to.getMinutes())}`;
-
-        timeFromInput.value = defaultFrom;
-        timeToInput.value = defaultTo;
-    }
+    // Remove auto-fill for timeFrom and timeTo input fields
 });
 
 
@@ -281,19 +278,27 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Show feedback to user
             const hint = buildingSelect.parentElement.querySelector('.input-hint');
-            if (hint) {
-                hint.textContent = `Auto-selected: ${building}`;
-                hint.style.color = "#28a745";
-                
-                // Reset hint after 3 seconds
+            if (date) {
+                const [year, month, day] = date.split("-");
+                // Always force the form to use the date from the URL
                 setTimeout(() => {
-                    hint.textContent = "Building";
-                    hint.style.color = "";
-                }, 3000);
+                  document.getElementById("year").value = year;
+                  document.getElementById("month").value = String(parseInt(month) - 1); // Months are 0-indexed, ensure string
+                  document.getElementById("day").value = String(Number(day));
+                  // Update summary if present
+                  const summaryDate = document.getElementById("summaryDate");
+                  if (summaryDate) {
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    summaryDate.textContent = `${monthNames[parseInt(month)-1]} ${Number(day)}, ${year}`;
+                  }
+                  // Extra debug: log what is set in the form
+                  console.log('[BOOK_ROOM DEBUG] Forced form values set:', {
+                    year: document.getElementById("year").value,
+                    month: document.getElementById("month").value,
+                    day: document.getElementById("day").value
+                  });
+                }, 100); // Delay to override any other autofill
             }
-        } else {
-            // Reset building selection if room not found
-            buildingSelect.value = "";
             buildingSelect.style.backgroundColor = "";
             
             // Show message if room number doesn't exist
@@ -403,12 +408,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Format date
-        const bookingDate = `${formData.year}-${String(parseInt(formData.month) + 1).padStart(2, '0')}-${String(formData.day).padStart(2, '0')}`;
-        
+        const bookingDate = `${formData.year}-${String(parseInt(formData.month) + 1).padStart(2, '0')}-${String(Number(formData.day)).padStart(2, '0')}`;
+
         // Check if date is in the future
         const today = new Date();
         const selectedDate = new Date(bookingDate);
-        if (selectedDate < today.setHours(0, 0, 0, 0)) {
+        if (selectedDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
             showErrorModal("⚠️ Invalid Date", "Cannot book rooms for past dates. Please select a future date.");
             return;
         }
@@ -623,7 +628,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Add new event listeners
         newViewBtn.addEventListener('click', function() {
-            window.location.href = "booking_history.html";
+            window.location.href = "view_booking.html";
         });
 
         newCloseBtn.addEventListener('click', function() {
@@ -688,5 +693,26 @@ document.addEventListener("DOMContentLoaded", function () {
         const modal = document.getElementById('successModal');
         modal.classList.remove('show');
         document.body.style.overflow = '';
+    }
+
+    // --- Show booking summary if coming from available room ---
+    const summaryBox = document.getElementById('bookingSummary');
+    if (summaryBox) {
+        let room = params.get('roomNumber');
+        let building = params.get('building');
+        let date = params.get('date');
+        let timeFrom = params.get('timeFrom');
+        let timeTo = params.get('timeTo');
+        if (room && building && date && timeFrom && timeTo) {
+            // Format date
+            const [year, month, day] = date.split('-');
+            const dateStr = `${year}-${month}-${day}`;
+            // Format time for summary only (not for input fields)
+            const formatTime = t => t.length === 5 ? t : t.slice(0,5);
+            document.getElementById('summaryRoom').textContent = `${room} (${building})`;
+            document.getElementById('summaryDate').textContent = dateStr;
+            document.getElementById('summaryTime').textContent = `${formatTime(timeFrom)} - ${formatTime(timeTo)}`;
+            summaryBox.style.display = '';
+        }
     }
 });

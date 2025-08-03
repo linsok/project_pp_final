@@ -44,6 +44,20 @@ const timeSlots = [
 let allRooms = [];
 let roomBookings = [];
 
+// Helper: Get day of week as string (e.g., 'monday') from date string 'YYYY-MM-DD'
+function getDayOfWeek(dateString) {
+    // Parse 'YYYY-MM-DD' as local date to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    // Map Monday as 0, Sunday as 6 for weekly schedule
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    // getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
+    // We want: 0=Monday, ..., 5=Saturday, 6=Sunday
+    let jsDay = date.getDay();
+    let weekDayIndex = (jsDay === 0) ? 6 : jsDay - 1;
+    return days[weekDayIndex];
+}
+
 // Weekly Schedule Variables
 let weeklyBookings = [];
 let currentWeekStart = new Date();
@@ -135,7 +149,11 @@ async function loadBookingsForDate(date) {
             return;
         }
 
-        const dateStr = date.toISOString().split('T')[0];
+        // Use local date string to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
         console.log(`Fetching bookings for date: ${dateStr}`);
         
         const response = await fetch(`http://localhost:8000/api/bookings/date/${dateStr}/`, {
@@ -308,10 +326,10 @@ function renderRoomAvailabilityTable() {
             const roomCell = document.createElement('td');
             roomCell.className = 'room-cell';
             
-            // Check if room is booked at this time
+            // Check if room is booked at this time (compare only HH:MM)
             const booking = roomBookings.find(booking => 
                 booking.room_id === room.id && 
-                booking.start_time === timeSlot.start &&
+                booking.start_time && booking.start_time.slice(0,5) === timeSlot.start &&
                 booking.status === "confirmed"
             );
             
@@ -333,9 +351,14 @@ function renderRoomAvailabilityTable() {
                 roomCell.innerHTML = `<small style='font-weight: 600;'>Booked</small>${agendaHtml}`;
             } else {
                 roomCell.className += ' available';
+                // Pass the selectedDate (the date used for fetching) to the booking form
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                const day = String(selectedDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
                 roomCell.innerHTML = `
                     <button class="book-cell-btn" 
-                            onclick="bookRoom('${room.id}', '${room.roomNumber}', '${room.buildingName}', '${timeSlot.start}', '${timeSlot.end}')">
+                            onclick="bookRoom('${room.id}', '${room.roomNumber}', '${room.buildingName}', '${timeSlot.start}', '${timeSlot.end}', '${dateStr}')">
                         Book Now
                     </button>
                 `;
@@ -389,9 +412,16 @@ function nextMonth() {
 }
 
 // Book room function
-function bookRoom(roomId, roomNumber, buildingName, startTime, endTime) {
-    const selectedDateStr = selectedDate.toISOString().split('T')[0];
-    
+// Accept dateStr as an optional argument for explicit date passing
+function bookRoom(roomId, roomNumber, buildingName, startTime, endTime, dateStr) {
+    let bookingDate = dateStr;
+    if (!bookingDate) {
+        // fallback to selectedDate if not provided
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        bookingDate = `${year}-${month}-${day}`;
+    }
     // Convert 24-hour format to 12-hour for display
     const formatTime = (time24) => {
         const [hours, minutes] = time24.split(':');
@@ -399,27 +429,29 @@ function bookRoom(roomId, roomNumber, buildingName, startTime, endTime) {
         const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
         return `${hour12}:${minutes} ${ampm}`;
     };
-    
     const queryParams = new URLSearchParams({
         roomNumber: roomNumber,
         building: buildingName,
-        date: selectedDateStr,
-        startTime: startTime,
-        endTime: endTime,
-        fromTime: formatTime(startTime),
-        toTime: formatTime(endTime)
+        date: bookingDate,
+        timeFrom: startTime,
+        timeTo: endTime
     });
-
     window.location.href = `book_room.html?${queryParams.toString()}`;
 }
 
 // Book room function for weekly schedule
-function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, dayIndex) {
-    // Calculate the date for the selected day
-    const bookingDate = new Date(currentWeekStart);
-    bookingDate.setDate(currentWeekStart.getDate() + dayIndex);
-    const selectedDateStr = bookingDate.toISOString().split('T')[0];
-    
+// Accept dateStr as an optional argument for explicit date passing
+function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, dayIndex, dateStr) {
+    let selectedDateStr = dateStr;
+    if (!selectedDateStr) {
+        // fallback to old logic if not provided
+        const bookingDate = new Date(currentWeekStart);
+        bookingDate.setDate(currentWeekStart.getDate() + dayIndex);
+        const year = bookingDate.getFullYear();
+        const month = String(bookingDate.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(bookingDate.getDate()).padStart(2, '0');
+        selectedDateStr = `${year}-${month}-${dayNum}`;
+    }
     // Convert 24-hour format to 12-hour for display
     const formatTime = (time24) => {
         const [hours, minutes] = time24.split(':');
@@ -427,7 +459,6 @@ function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, da
         const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
         return `${hour12}:${minutes} ${ampm}`;
     };
-    
     const queryParams = new URLSearchParams({
         roomNumber: roomNumber,
         building: buildingName,
@@ -437,7 +468,6 @@ function bookRoomWeekly(roomId, roomNumber, buildingName, startTime, endTime, da
         fromTime: formatTime(startTime),
         toTime: formatTime(endTime)
     });
-
     window.location.href = `book_room.html?${queryParams.toString()}`;
 }
 
@@ -575,7 +605,7 @@ async function loadWeeklyBookings() {
         // Transform the data to match the expected format
         weeklyBookings = Array.isArray(data) ? data.map(booking => ({
             id: booking.id,
-            room_id: booking.room,
+            room_id: booking.room_id, // FIX: use room_id from backend
             day: getDayOfWeek(booking.booking_date), // Convert date to day name
             start_time: booking.start_time,
             end_time: booking.end_time,
@@ -636,42 +666,40 @@ function renderWeeklySchedule(roomId) {
     
     weeklyBody.innerHTML = '';
     
+    console.log('DEBUG: weeklyBookings', weeklyBookings);
     timeSlots.forEach(timeSlot => {
         const row = document.createElement('tr');
-        
         // Time column
         const timeCell = document.createElement('td');
         timeCell.className = 'time-slot';
         timeCell.textContent = timeSlot.display;
         row.appendChild(timeCell);
-        
         // Day columns (Monday to Saturday)
         const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        
         daysOfWeek.forEach((day, dayIndex) => {
             const dayCell = document.createElement('td');
             dayCell.className = 'day-cell';
-            
-            // Check if room is booked at this time on this day
-            const booking = weeklyBookings.find(booking => 
-                booking.room_id === roomId && 
+            // Debug log for matching
+            const matches = weeklyBookings.filter(booking =>
+                booking.room_id === roomId &&
                 booking.day === day &&
-                booking.start_time === timeSlot.start &&
+                booking.start_time && booking.start_time.slice(0,5) === timeSlot.start &&
                 booking.status === "confirmed"
             );
-            
+            if (matches.length > 0) {
+                console.log(`DEBUG: Found booking(s) for room ${roomId}, day ${day}, time ${timeSlot.start}:`, matches);
+            }
+            // Check if room is booked at this time on this day
+            const booking = matches[0];
             // Get the date for this day
             const date = new Date(currentWeekStart);
             date.setDate(currentWeekStart.getDate() + dayIndex);
-            
             // Check if the time slot is in the past
             const now = new Date();
             const slotDateTime = new Date(date);
             const [hours, minutes] = timeSlot.start.split(':');
             slotDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-            
             const isPast = slotDateTime < now;
-            
             if (isPast) {
                 dayCell.className += ' unavailable';
                 dayCell.innerHTML = '<small style="opacity: 0.6;">Past</small>';
@@ -683,6 +711,7 @@ function renderWeeklySchedule(roomId) {
                 dayCell.innerHTML = `<div style='font-weight:600;'>Booked</div>${agendaHtml}`;
             } else {
                 dayCell.className += ' available';
+                // Auto-fill like Room Booking Schedule
                 dayCell.innerHTML = `
                     <button class="book-cell-btn" 
                             onclick="bookRoomWeekly('${selectedRoom.id}', '${selectedRoom.roomNumber}', '${selectedRoom.buildingName}', '${timeSlot.start}', '${timeSlot.end}', ${dayIndex})">
@@ -690,10 +719,8 @@ function renderWeeklySchedule(roomId) {
                     </button>
                 `;
             }
-            
             row.appendChild(dayCell);
         });
-        
         weeklyBody.appendChild(row);
     });
 }
