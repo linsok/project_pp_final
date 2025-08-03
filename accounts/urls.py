@@ -10,7 +10,7 @@ from .views import (
     create_backup, list_backups, restore_backup, delete_backup,
     get_notification_settings, update_notification_settings, test_notification_email,
     get_user_notification_settings, update_user_notification_settings, test_user_notification_email,
-    admin_recent_bookings, admin_users_table, admin_rooms_table
+    admin_recent_bookings, admin_users_table, admin_rooms_table, bookings_by_date, bookings_by_week
 )
 
 urlpatterns = [
@@ -19,6 +19,8 @@ urlpatterns = [
     
     # Room and Booking endpoints
     path('rooms/', RoomListView.as_view(), name='room-list'),
+    path('bookings/date/<str:date_str>/', bookings_by_date, name='bookings-by-date'),
+    path('bookings/week/<str:week_start_str>/', bookings_by_week, name='bookings-by-week'),
     path('rooms/create/', RoomCreateView.as_view(), name='room-create'),
     path('rooms/<int:pk>/', RoomUpdateView.as_view(), name='room-update'),
     path('rooms/<int:pk>/delete/', RoomDeleteView.as_view(), name='room-delete'),

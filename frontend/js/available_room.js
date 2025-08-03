@@ -126,17 +126,50 @@ function useFallbackRoomData() {
     loadWeeklyBookings();
 }
 
-// Load bookings for a specific date
+// Load bookings for a specific date from the backend
 async function loadBookingsForDate(date) {
     try {
+        if (!date || !(date instanceof Date) || isNaN(date)) {
+            console.error('Invalid date provided to loadBookingsForDate:', date);
+            roomBookings = [];
+            return;
+        }
+
         const dateStr = date.toISOString().split('T')[0];
-        // Note: This endpoint doesn't exist yet, but we'll prepare for it
-        // const response = await fetch(`http://localhost:8000/api/bookings/date/${dateStr}/`);
+        console.log(`Fetching bookings for date: ${dateStr}`);
         
-        // For now, use sample booking data
-        roomBookings = generateSampleBookings(date);
+        const response = await fetch(`http://localhost:8000/api/bookings/date/${dateStr}/`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', response.status, errorText);
+            throw new Error(`Failed to fetch bookings: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Successfully loaded bookings:', data);
+        
+        // Transform the data to match the expected format
+        roomBookings = Array.isArray(data) ? data.map(booking => ({
+            id: booking.id,
+            room_id: booking.room,
+            start_time: booking.start_time,
+            end_time: booking.end_time,
+            status: booking.status || 'confirmed',
+            purpose: booking.purpose || '',
+            // Add any other fields your frontend expects
+            ...booking
+        })) : [];
+        
     } catch (error) {
-        console.error('Error loading bookings:', error);
+        console.error('Error in loadBookingsForDate:', error);
         roomBookings = [];
     }
 }
@@ -507,14 +540,60 @@ function populateWeeklyRoomSelector() {
     });
 }
 
-// Load weekly bookings from database
+// Load weekly bookings from the database
 async function loadWeeklyBookings() {
     try {
-        // For now, generate sample weekly data
-        // In a real app, this would fetch from: /api/bookings/week/YYYY-MM-DD/
-        weeklyBookings = generateSampleWeeklyBookings();
+        if (!currentWeekStart) {
+            currentWeekStart = getStartOfWeek(new Date());
+        }
+        
+        const weekStart = currentWeekStart.toISOString().split('T')[0];
+        const weekEnd = new Date(currentWeekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekEndStr = weekEnd.toISOString().split('T')[0];
+        
+        console.log(`Fetching weekly bookings from ${weekStart} to ${weekEndStr}`);
+        
+        const response = await fetch(`http://localhost:8000/api/bookings/week/${weekStart}/`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', response.status, errorText);
+            throw new Error(`Failed to fetch weekly bookings: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Successfully loaded weekly bookings:', data);
+        
+        // Transform the data to match the expected format
+        weeklyBookings = Array.isArray(data) ? data.map(booking => ({
+            id: booking.id,
+            room_id: booking.room,
+            day: getDayOfWeek(booking.booking_date), // Convert date to day name
+            start_time: booking.start_time,
+            end_time: booking.end_time,
+            status: booking.status || 'confirmed',
+            purpose: booking.purpose || '',
+            meetingAgenda: booking.meeting_agenda || booking.purpose || '',
+            // Add any other fields your frontend expects
+            ...booking
+        })) : [];
+        
+        // Update the UI if a room is already selected
+        const roomSelect = document.getElementById('weeklyRoomSelect');
+        if (roomSelect && roomSelect.value) {
+            renderWeeklySchedule(parseInt(roomSelect.value));
+        }
+        
     } catch (error) {
-        console.error('Error loading weekly bookings:', error);
+        console.error('Error in loadWeeklyBookings:', error);
         weeklyBookings = [];
     }
 }

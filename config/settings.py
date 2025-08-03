@@ -25,7 +25,33 @@ SECRET_KEY = 'django-insecure-kij2b*9ew7yq$v&jhwa%^kh%kqcul&$jlm6fv3-6csq!qc2t0r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = False  # Disable this when using specific origins
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific origins for development
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5501",  # Your frontend server (Live Server)
+    "http://localhost:5501",   # Alternative frontend URL
+    "http://127.0.0.1:8000",   # Django development server
+    "http://localhost:8000",   # Alternative Django URL
+]
+
+# Required for credentials (cookies, HTTP authentication)
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Allow all hosts for development
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -52,15 +78,15 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "allauth.account.middleware.AccountMiddleware",  # <--- Add this line here
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Add this line - must be before CommonMiddleware
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
