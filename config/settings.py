@@ -10,55 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
 from pathlib import Path
-from dotenv import load_dotenv
-
-# Load environment variables from .env file if it exists
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Determine environment
-DEPLOY_ENV = os.environ.get('DEPLOY_ENV', 'development')
 
-# Import production settings if in production
-if DEPLOY_ENV == 'production':
-    from .production_settings import *
-else:
-    # Development settings
-    DEBUG = True
-    ALLOWED_HOSTS = ['*']
-    
-    # Database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'myprojectdb'),
-            'USER': os.environ.get('DB_USER', 'myuser'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', '123212'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-        }
-    }
-    
-    # Static files (CSS, JavaScript, Images)
-    STATIC_URL = '/static/'
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, 'frontend'),
-    ]
-    
-    # Media files
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-kij2b*9ew7yq$v&jhwa%^kh%kqcul&$jlm6fv3-6csq!qc2t0r'
 
-# Security settings
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key-1234')
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 # CORS settings
+CORS_ALLOW_ALL_ORIGINS = False  # Disable this when using specific origins
 CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific origins for development
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5501",  # Your frontend server (Live Server)
     "http://localhost:5501",   # Alternative frontend URL
@@ -79,7 +50,8 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Allowed hosts are set based on the environment
+# Allow all hosts for development
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -192,7 +164,19 @@ STATICFILES_DIRS = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database configuration is set based on the environment
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'myprojectdb',       # name of your database
+        'USER': 'myuser',            # your postgres user
+        'PASSWORD': '123212', # the password you set
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 
 # Password validation
@@ -226,7 +210,10 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files configuration is set based on the environment
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

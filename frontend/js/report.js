@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
             console.log('Request data:', requestData);
 
-            const response = await fetch('http://localhost:8000/api/reports/', {
+            const response = await fetch('http://localhost:8000/api/reports/create/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -180,13 +180,24 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 class ReportProblemSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username', read_only=True)
-    
+    username = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+
     class Meta:
         model = ReportProblem
-        fields = ['id', 'description', 'created_at', 'username']
-        read_only_fields = ['id', 'created_at', 'username']
-    
+        fields = ['id', 'description', 'created_at', 'username', 'email', 'status']
+        read_only_fields = ['id', 'created_at', 'username', 'email', 'status']
+
+    def get_username(self, obj):
+        if obj.user:
+            return obj.user.username
+        return None
+
+    def get_email(self, obj):
+        if obj.user:
+            return obj.user.email
+        return None
+
     def create(self, validated_data):
         # Set the user from the request context
         request = self.context.get('request')

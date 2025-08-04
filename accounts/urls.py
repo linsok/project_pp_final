@@ -10,7 +10,8 @@ from .views import (
     create_backup, list_backups, restore_backup, delete_backup,
     get_notification_settings, update_notification_settings, test_notification_email,
     get_user_notification_settings, update_user_notification_settings, test_user_notification_email,
-    admin_recent_bookings, admin_users_table, admin_rooms_table, bookings_by_date, bookings_by_week
+    admin_recent_bookings, admin_users_table, admin_rooms_table, bookings_by_date, bookings_by_week,
+    ReportReplyView
 )
 
 urlpatterns = [
@@ -37,8 +38,10 @@ urlpatterns = [
     path('bookings/<int:booking_id>/status/', update_booking_status, name='update-booking-status'),
     
     # Report Problem endpoints
-    path('reports/', ReportProblemCreateView.as_view(), name='report-create'),
-    path('reports/all/', ReportProblemListView.as_view(), name='reports-list'),
+    path('reports/', ReportProblemListView.as_view(), name='reports-list'),  # For admin user reports
+    path('reports/create/', ReportProblemCreateView.as_view(), name='report-create'),
+    path('reports/all/', ReportProblemListView.as_view(), name='reports-list-all'),
+    path('reports/reply/', ReportReplyView.as_view(), name='report-reply'),
     
     # Custom 6-digit password reset endpoints
     path('password/reset/request/', request_password_reset, name='password_reset_request'),

@@ -8,14 +8,9 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
+
 from django.core.wsgi import get_wsgi_application
-from whitenoise import WhiteNoise
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-# This application object is used by the development server and any WSGI server
 application = get_wsgi_application()
-
-# Wrap the application with WhiteNoise for serving static files in production
-application = WhiteNoise(application, root='static')
-application.add_files('static', prefix='static/')

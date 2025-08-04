@@ -1,3 +1,44 @@
+from rest_framework import permissions
+from rest_framework.views import APIView
+# Admin reply to user report (stub)
+class ReportReplyView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        # Admin sends a reply to a user report
+        from django.core.mail import send_mail
+        from django.conf import settings as django_settings
+        report_id = request.data.get('report_id')
+        reply_message = request.data.get('reply_message')
+        if not report_id or not reply_message:
+            return Response({'error': 'report_id and reply_message are required.'}, status=400)
+
+        try:
+            report = ReportProblem.objects.get(id=report_id)
+        except ReportProblem.DoesNotExist:
+            return Response({'error': 'Report not found.'}, status=404)
+
+        user = report.user
+        user_email = user.email if user else None
+        if not user_email:
+            return Response({'error': 'No email associated with this report.'}, status=400)
+
+        subject = 'Reply to your report - RUPP Room Booking System'
+        message = f"Hello {user.username if user else 'User'},\n\n"
+        message += f"Admin has replied to your report submitted on {report.created_at.strftime('%Y-%m-%d %H:%M')}:\n\n"
+        message += f"Your report: {report.description}\n\n"
+        message += f"Admin reply: {reply_message}\n\n"
+        message += "If you have further questions, please reply to this email.\n\nBest regards,\nRUPP Room Booking System Team"
+
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user_email],
+            fail_silently=False,
+        )
+
+        return Response({'message': 'Reply sent successfully and email delivered to user.'}, status=200)
 from rest_framework import generics, permissions
 from .models import Profile, PasswordResetCode, Room, Booking, ReportProblem
 from .serializers import ProfileSerializer, RoomSerializer, BookingSerializer, ReportProblemSerializer
