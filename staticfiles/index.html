@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Room Booking System</title>
+  <style>
+    .hidden {
+      display: none;
+    }
+    #forgot-password-form form,
+    #signup-form form,
+    #login-form form {
+      display: flex;
+      flex-direction: column;
+    }
+    #forgot-password-form .form-group,
+    #signup-form .form-group,
+    #login-form .form-group {
+      margin-bottom: 20px;
+    }
+    #forgot-password-form .btn-primary,
+    #signup-form .btn-primary,
+    #login-form .btn-primary {
+      margin-top: 10px;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      display: flex;
+      width: 1000px;
+      height: 660px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .left-panel {
+      flex: 1;
+      background: url('img/photo_2025-06-11_07-39-38.jpg') no-repeat center center/cover;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      text-align: center;
+    }
+    .left-panel h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    .left-panel p {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .right-panel {
+      flex: 1;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .form-title {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .tagline {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-style: italic;
+      font-size: 16px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 9px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+    .forgot-password {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    .forgot-password a {
+      color: #07203F;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 7px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .btn-primary {
+      background-color: #07203F;
+      color: white;
+      margin-bottom: 15px;
+    }
+    .btn-primary:hover {
+      background-color: #07203F;
+    }
+
+
+    .signup-link {
+      text-align: center;
+      margin-top: 10px;
+      color: #666;
+    }
+    .signup-link a {
+      color: #07203F;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    #signup-form,
+    #forgot-password-form {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-panel"></div>
+    <div class="right-panel">
+      <!-- Login Form -->
+      <div id="login-form">
+        <h2 class="form-title"><font color="#07203F">Sign In</font></h2>
+        <p class="tagline">Book your room, own your time!</p>
+        <form>
+          <div class="form-group">
+            <label for="login-username">Email</label>
+            <input type="text" id="login-username" placeholder="Email address" />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Password" />
+            <div class="forgot-password">
+              <a href="#" id="show-forgot"><u>Forgot password?</u></a>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+          <div class="signup-link">
+            <font size="3">Don't have an account? <a href="#" id="show-signup"><u>Sign up</u></a></font>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signup-form">
+        <h2 class="form-title"><font color="#07203F">Sign Up</font></h2>
+        <p class="tagline">Create your account to start booking!</p>
+        <form>
+          <div class="form-group">
+            <label for="phone">Phone Number (Optional)</label>
+            <input type="tel" id="phone" placeholder="Enter your phone number (optional)" />
+            <div id="phone-error" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label for="signup-username">Your Name</label>
+            <input type="text" id="signup-username" placeholder="Enter your name" />
+            <div id="username-error" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" placeholder="Enter your email" />
+            <div id="email-error" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" placeholder="Create a password" />
+            <div id="password-error" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label for="signup-password2">Confirm Password</label>
+            <input type="password" id="signup-password2" placeholder="Confirm your password" />
+            <div id="password2-error" class="error-message"></div>
+          </div>
+          <div id="signup-error" style="color:red;margin-bottom:10px;display:none;"></div>
+          <button type="submit" class="btn btn-primary">Create Account</button>
+          <div class="signup-link">
+            <font size="3">Already have an account? </font
+            ><a href="#" id="show-login"><u>Log In</u></a>
+          </div>
+        </form>
+      </div>
+
+ 
+
+      <!-- Forgot Password Form -->
+      <div id="forgot-password-form">
+        <h2 class="form-title"><font color="#07203F">Reset Password</font></h2>
+        <p class="tagline">Enter your email or phone to reset your password</p>
+        <form>
+          <div class="form-group">
+            <label for="reset-contact">Email</label>
+            <input type="text" id="reset-contact" placeholder="Enter your email" />
+          </div>
+          <button type="submit" class="btn btn-primary">Reset Password</button>
+          <div class="signup-link">
+            <font size="3">Back to </font
+            ><a href="#" id="back-to-login"><u>Login</u></a>
+          </div>
+        </form>
+      </div>
+      <!-- Reset code entry and resend -->
+      <div id="reset-code-container" class="hidden">
+        <div class="form-title"><font color="#07203F">Enter Reset Code</font></div>
+        <p class="tagline">If you didn't receive the code, <a href="#" id="resend-code-link"><u>click here to resend</u></a></p>
+        <form id="reset-code-form">
+          <div class="form-group">
+            <label for="reset-code-input">Reset Code</label>
+            <input type="text" id="reset-code-input" placeholder="Enter the code sent to your email" required />
+            <input type="hidden" id="reset-code-email" />
+          </div>
+          <button type="submit" class="btn btn-primary">Verify Code</button>
+        </form>
+        <div id="reset-code-message"></div>
+      </div>
+
+      <!-- New password entry -->
+      <div id="set-password-container" class="hidden">
+        <div class="form-title"><font color="#07203F">Set New Password</font></div>
+        <form id="set-password-form">
+          <input type="hidden" id="set-password-email" />
+          <input type="hidden" id="set-password-token" />
+          <div class="form-group">
+            <label for="set-password-input">New Password</label>
+            <input type="password" id="set-password-input" placeholder="New password" required />
+          </div>
+          <div class="form-group">
+            <label for="set-password-confirm-input">Confirm New Password</label>
+            <input type="password" id="set-password-confirm-input" placeholder="Confirm new password" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Set Password</button>
+        </form>
+        <div id="set-password-message"></div>
+      </div>
+    </div>
+  </div>
+  <script src="js/message_system.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

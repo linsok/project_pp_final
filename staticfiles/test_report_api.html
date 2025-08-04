@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report API Test</title>
+</head>
+<body>
+    <h1>Report API Test</h1>
+    <button onclick="testReportAPI()">Test Report API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testReportAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Check if user is logged in
+                const token = localStorage.getItem('authToken');
+                console.log('Token:', token);
+                
+                if (!token) {
+                    resultDiv.innerHTML = 'ERROR: No auth token found. Please login first.';
+                    return;
+                }
+                
+                // Test API call
+                const response = await fetch('/api/reports/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify({
+                        description: 'Test report from debug page'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `SUCCESS: ${JSON.stringify(data)}`;
+                } else {
+                    resultDiv.innerHTML = `ERROR ${response.status}: ${JSON.stringify(data)}`;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `NETWORK ERROR: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

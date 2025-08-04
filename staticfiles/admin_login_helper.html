@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login Helper</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 { margin-bottom: 30px; }
+        .login-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        button:hover { background: #059669; }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success { background: rgba(16, 185, 129, 0.3); }
+        .error { background: rgba(239, 68, 68, 0.3); }
+        .info { background: rgba(59, 130, 246, 0.3); }
+        .dashboard-link {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .dashboard-link:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Admin Login Helper</h1>
+        
+        <div class="login-section">
+            <h3>Quick Admin Login</h3>
+            <p>Click the button below to automatically log in with admin credentials:</p>
+            <button onclick="quickAdminLogin()">🚀 Login as Admin</button>
+        </div>
+        
+        <div class="login-section">
+            <h3>Manual Login</h3>
+            <p>Or use these credentials manually:</p>
+            <p><strong>Email:</strong> testadmin@example.com</p>
+            <p><strong>Password:</strong> testpass123</p>
+            <button onclick="window.location.href='index.html'">📝 Go to Login Page</button>
+        </div>
+        
+        <div id="status" class="status info" style="display: none;"></div>
+        
+        <a href="admin_dashboard.html" class="dashboard-link" id="dashboardLink" style="display: none;">
+            🏠 Go to Admin Dashboard
+        </a>
+    </div>
+
+    <script>
+        async function quickAdminLogin() {
+            const statusDiv = document.getElementById('status');
+            const dashboardLink = document.getElementById('dashboardLink');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '🔄 Logging in...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'testadmin@example.com',
+                        password: 'testpass123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.key) {
+                    // Store the token
+                    localStorage.setItem('authToken', data.key);
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Login successful! You can now access the admin dashboard.';
+                    
+                    dashboardLink.style.display = 'inline-block';
+                    
+                    // Auto-redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'admin_dashboard.html';
+                    }, 2000);
+                    
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Login failed: ' + (data.non_field_errors ? data.non_field_errors.join(', ') : 'Unknown error');
+                }
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Network error: ' + error.message;
+            }
+        }
+        
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Already logged in! You can access the admin dashboard.';
+                
+                document.getElementById('dashboardLink').style.display = 'inline-block';
+            }
+        });
+    </script>
+</body>
+</html> 
