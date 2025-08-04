@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: room-booking-app
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: SECRET_KEY
+        value: django-insecure-kij2b*9ew7yq$v&jhwa%^kh%kqcul&$jlm6fv3-6csq!qc2t0r
+      - key: DEBUG
+        value: True
