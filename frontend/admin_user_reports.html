@@ -124,7 +124,9 @@
         function displayReports(reports) {
             const container = document.getElementById('reportsContainer');
             if (!reports || reports.length === 0) return;
-            
+            // Get replied report IDs from localStorage
+            let repliedReports = JSON.parse(localStorage.getItem('repliedReports') || '[]');
+            repliedReports = repliedReports.map(id => id.toString());
             container.innerHTML = '';
             reports.forEach(report => {
                 const reportDate = new Date(report.created_at).toLocaleString();
@@ -134,8 +136,9 @@
                 } else if (report.username) {
                     userDisplay = report.username;
                 }
+                const isReplied = repliedReports.includes(report.id.toString());
                 container.innerHTML += `
-                    <div class="report-card">
+                    <div class="report-card" style="${isReplied ? 'border-left: 4px solid #10b981; background: #e6f9f0;' : ''}">
                         <div class="report-header">
                             <div class="report-user">
                                 <i class="fas fa-user-circle"></i> 
@@ -144,8 +147,8 @@
                             <div class="report-time">${reportDate}</div>
                         </div>
                         <div class="report-content">${report.description}</div>
-                        <button class="btn-reply" onclick="showReplyForm('${report.id}', '${report.email || ''}')">
-                            <i class="fas fa-reply"></i> Reply
+                        <button class="btn-reply" onclick="showReplyForm('${report.id}', '${report.email || ''}')" ${isReplied ? 'disabled style="background:#10b981;cursor:default;"' : ''}>
+                            <i class="fas fa-reply"></i> ${isReplied ? 'Replied' : 'Reply'}
                         </button>
                         <div class="reply-form" id="replyForm-${report.id}">
                             <textarea id="replyMessage-${report.id}" placeholder="Type your reply here..."></textarea>
@@ -184,8 +187,14 @@
                     body: JSON.stringify({report_id: reportId, reply_message: message})
                 });
                 if (response.ok) {
+                    // Mark as replied in localStorage
+                    let repliedReports = JSON.parse(localStorage.getItem('repliedReports') || '[]');
+                    if (!repliedReports.includes(reportId.toString())) repliedReports.push(reportId.toString());
+                    localStorage.setItem('repliedReports', JSON.stringify(repliedReports));
                     alert('Reply sent successfully');
                     document.getElementById(`replyForm-${reportId}`).style.display = 'none';
+                    // Refresh reports to update UI
+                    loadReports();
                 } else {
                     const errorData = await response.json().catch(() => ({}));
                     alert('Failed to send reply: ' + (errorData.error || response.statusText));
