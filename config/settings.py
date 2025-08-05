@@ -3,10 +3,16 @@ from decouple import config
 import dj_database_url
 import os
 
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Secret key and debug
+# Secret key and debugfrom decouple import config
 SECRET_KEY = config('SECRET_KEY')
+
+
+
+
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -171,3 +177,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SITE_ID = 1
+
+
+
+
