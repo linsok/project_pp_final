@@ -22,11 +22,14 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(','
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5501",
     "http://localhost:5501",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "http://127.0.0.1:5502",  # Your live server port
+    "http://localhost:5502",
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -40,6 +43,9 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+
+
 
 # Installed apps
 INSTALLED_APPS = [
@@ -70,6 +76,7 @@ SITE_ID = 1
 
 # Middleware
 MIDDLEWARE = [
+   
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # after SecurityMiddleware
     'corsheaders.middleware.CorsMiddleware',
@@ -159,12 +166,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration using DATABASE_URL environment variable
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': dj_database_url.config(default=config("DATABASE_URL"), conn_max_age=600)
 }
+
 
 # Password validators
 AUTH_PASSWORD_VALIDATORS = [
