@@ -5,16 +5,16 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Secret key and debug
 SECRET_KEY = config('SECRET_KEY')
 
-# Make sure DEBUG is False in production; set via environment variable on Render
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-# Allow your Render domain and localhost for testing
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='yourapp.onrender.com,localhost,127.0.0.1').split(',')
+# Allowed hosts — set your Railway app domain and localhost
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# CORS settings (adjust if needed)
-CORS_ALLOW_ALL_ORIGINS = False
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5501",
@@ -35,6 +35,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.sites',
@@ -55,9 +56,10 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
 ]
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # must be right after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # after SecurityMiddleware
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,6 +75,7 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
+# Allauth & Rest auth settings
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = None
 ACCOUNT_EMAIL_REQUIRED = True
@@ -95,12 +98,11 @@ REST_FRAMEWORK = {
     ]
 }
 
-# For development you had this True, but safer to control with env var or keep False on production
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
-
+# Redirect URLs
 LOGIN_REDIRECT_URL = '/frontend/home.html'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/frontend/index.html'
 
+# Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -111,6 +113,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 EXPIRED_ACCOUNT_EMAIL_DAYS = 3
 
+# URLs and static/media paths
 ROOT_URLCONF = 'config.urls'
 
 MEDIA_URL = '/media/'
@@ -119,7 +122,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": [BASE_DIR / 'templates', BASE_DIR / 'frontend'],  
+        "DIRS": [BASE_DIR / 'templates', BASE_DIR / 'frontend'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -131,7 +134,6 @@ TEMPLATES = [
     },
 ]
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -143,15 +145,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# DATABASE CONFIG - Use dj_database_url to parse DATABASE_URL environment variable from Render
+# Database configuration using DATABASE_URL environment variable
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"postgres://{config('DB_USER')}:{config('DB_PASSWORD')}@{config('DB_HOST')}:{config('DB_PORT')}/{config('DB_NAME')}",
+        default=config('DATABASE_URL'),
         conn_max_age=600,
         ssl_require=True
     )
 }
 
+# Password validators
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
@@ -159,6 +162,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
+# Localization and timezone
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
@@ -167,6 +171,3 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SITE_ID = 1
-
-# Remove django_heroku.settings(locals()) because you are deploying on Render, not Heroku
-# django_heroku.settings(locals())
