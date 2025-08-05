@@ -138,10 +138,12 @@ ROOT_URLCONF = 'config.urls'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'frontend'],  # ✅ Only this line needed
+        'DIRS': [BASE_DIR / 'templates'],  # point to your templates folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -156,12 +158,17 @@ TEMPLATES = [
 
 
 
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+
 STATICFILES_DIRS = [
-    BASE_DIR / 'frontend',
+    BASE_DIR / 'static',  # your static assets folder
 ]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # for production collectstatic
+
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

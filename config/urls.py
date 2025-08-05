@@ -40,7 +40,9 @@ urlpatterns = [
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     
     
-    path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    # ... other routes here ...
+    path('', TemplateView.as_view(template_name='frontend/index.html'), name='home'),
+   
     
     # Frontend HTML files
     path('frontend/home.html', TemplateView.as_view(template_name='home.html'), name='home'),
