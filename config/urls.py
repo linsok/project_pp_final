@@ -26,7 +26,9 @@ from django.views.static import serve
 from django.urls import re_path
 
 
-from .views import index_view  # ✅ Import the view you just created
+
+from django.views.generic import TemplateView
+
 
 
 
@@ -38,7 +40,7 @@ urlpatterns = [
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     
     
-    path('', index_view, name='index'),  # ✅ Make root URL show index.html
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
     
     # Frontend HTML files
     path('frontend/home.html', TemplateView.as_view(template_name='home.html'), name='home'),
