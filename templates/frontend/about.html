@@ -1,0 +1,222 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUPP Room Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+  <div class="topbar"></div>
+  <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <!-- Profile Section Header -->
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Luffy</span>
+                <span id="profileIconContainer">
+                    <i class="fas fa-user-circle profile-icon" id="profileIcon"></i>
+                </span>
+
+                <div class="profile-dropdown-menu" id="profileDropdown" >
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-briefcase"></i> Your account</span>
+                        <a href="setting.html"><i class="fas fa-cog dropdown-settings"></i></a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar-container" style="position: relative; width: 96px; height: 96px;">
+                            <img src="default.png" class="user-avatar" id="profileImg" alt="Profile Image" style="width: 96px; height: 96px; border-radius: 50%;" />
+                            <input type="file" id="profileImgInput" style="display:none;" accept="image/*" />
+                            <span id="editPhoto" style="position:absolute;top:35px;left:35px;display:none;cursor:pointer;">
+                                <i class="fas fa-camera"></i>
+                            </span>
+                        </div>
+                        <div class="user-details">
+                        <div class="user-name-dropdown">Your name here</div>
+                        <div class="user-email">your@remail.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+                <ul class="dropdown-menu" id="dropdownMenu">
+                    <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
+                    <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
+                    <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
+                    <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
+                    <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
+                    <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
+                </ul>
+            </button>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="book_room.html"><i class="fas fa-calendar-alt"></i> Booking</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html"><i class="fas fa-info-circle"></i> About us</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="about-modern-main">
+        <!-- Top Section -->
+        <section class="about-hero-modern about-hero-no-padding">
+            <div class="about-hero-content about-hero-no-gap">
+                <div class="about-hero-left">
+                    <h1>About Us</h1>
+                    <p>Welcome to the official Room Booking System of the Royal University of Phnom Penh (RUPP) — a modern, digital solution developed to simplify and streamline the process of reserving university spaces.</p>
+                </div>
+                <div class="about-hero-right">
+                    <img src="img/your-logo.png" alt="RUPP Family" class="about-hero-img about-img-no-margin" />
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Section: Our Story -->
+        <section class="about-story-modern">
+            <div class="about-story-row about-hero-no-gap">
+                <div class="about-story-img-col">
+                    <img src="img/photo_2025-06-11_07-39-38.jpg" alt="Our Team" class="about-story-img about-img-no-margin" />
+                </div>
+                <div class="about-story-text-col">
+                    <h2>Our Story</h2>
+                    <p>At RUPP, we understand the importance of accessible, well-managed spaces for learning, collaboration, and academic events. This platform was created to help students, faculty, and staff easily book rooms for group study, meetings, workshops, and university events. Our mission is to make room booking simple, transparent, and fair for everyone at RUPP.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section: Features/Values -->
+        <section class="about-features-modern">
+            <h2 class="about-features-title">Why Use Our System?</h2>
+            <div class="about-features-row">
+                <div class="about-feature-card">
+                    <div class="about-feature-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>Fast & Easy</h3>
+                    <p>Book a room in just a few clicks. Our user-friendly interface makes the process quick and hassle-free for everyone.</p>
+                </div>
+                <div class="about-feature-card">
+                    <div class="about-feature-icon"><i class="fas fa-leaf"></i></div>
+                    <h3>Fair & Transparent</h3>
+                    <p>See real-time room availability and prevent double-bookings. Everyone gets equal access to university spaces.</p>
+                </div>
+                <div class="about-feature-card">
+                    <div class="about-feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Your bookings and data are safe. We use secure technology to protect your information and ensure reliability.</p>
+                </div>
+            </div>
+        </section>
+        <div class="about-modern-footer-msg">
+            <p>This room booking system is part of our ongoing effort to improve digital access and resource management at RUPP.</p>
+            <p><b>Thank you for using our system responsibly!</b></p>
+        </div>
+    </main>
+    <style>
+    .about-modern-main { background: #fff; font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; }
+    .about-hero-modern { background: #fff; padding: 0; border-radius: 0; margin-top: 32px; }
+    .about-hero-no-padding { padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important; }
+    .about-hero-content { display: flex; align-items: center; justify-content: center; gap: 48px; max-width: 1100px; margin: 0 auto; flex-wrap: wrap; }
+    .about-hero-no-gap { gap: 0 !important; }
+    .about-hero-left { flex: 1 1 320px; min-width: 270px; padding-left: 0; }
+    .about-hero-left h1 { font-size: 2.3rem; color: #1a4d3a; margin-bottom: 18px; }
+    .about-hero-left p { font-size: 1.13rem; color: #3a3a3a; margin-bottom: 22px; }
+    .about-hero-right { flex: 1 1 260px; display: flex; justify-content: center; padding-right: 0; }
+    .about-hero-img { width: 210px; height: 210px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 6px solid #fff; background: #f4f7fa; margin-top: 32px; }
+    .about-img-no-margin { margin: 0 !important; padding: 0 !important; }
+
+    .about-story-modern { background: #fff; padding: 48px 0 32px 0; }
+    .about-story-row { display: flex; align-items: center; justify-content: center; gap: 48px; max-width: 1100px; margin: 0 auto 36px auto; flex-wrap: wrap; }
+    .about-story-img-col { flex: 1 1 320px; display: flex; justify-content: center; }
+    .about-story-img { width: 240px; height: 240px; object-fit: cover; border-radius: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .about-story-text-col { flex: 2 1 340px; min-width: 270px; }
+    .about-story-text-col h2 { font-size: 1.5rem; color: #1a4d3a; margin-bottom: 12px; }
+    .about-story-text-col p { font-size: 1.08rem; color: #3a3a3a; }
+    .about-img-no-margin { margin: 0 !important; padding: 0 !important; }
+
+    .about-features-modern { background: #fff; padding: 48px 0 32px 0; }
+    .about-features-title { text-align: center; font-size: 1.4rem; color: #1a4d3a; margin-bottom: 32px; font-weight: 600; }
+    .about-features-row { display: flex; justify-content: center; gap: 36px; max-width: 1100px; margin: 0 auto; flex-wrap: wrap; }
+    .about-feature-card { background: #fff; border-radius: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.03); padding: 28px 24px; min-width: 220px; max-width: 320px; flex: 1 1 220px; text-align: center; }
+    .about-feature-icon { font-size: 2.1rem; color: #7ED957; margin-bottom: 10px; }
+    .about-feature-card h3 { font-size: 1.13rem; color: #1a4d3a; margin-bottom: 10px; }
+    .about-feature-card p { font-size: 1.01rem; color: #3a3a3a; }
+
+    .about-modern-footer-msg { text-align: center; margin-top: 0; margin-bottom: 0 !important; font-size: 1.08rem; color: #4a5568; padding-bottom: 64px !important; }
+    main.about-modern-main { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+    .rupp-footer { margin-top: 0 !important; padding-top: 0 !important; }
+    .footer-content { padding: 40px 0 24px 0; }
+    @media (max-width: 900px) {
+      .about-hero-content, .about-story-row, .about-features-row { flex-direction: column; gap: 28px; }
+      .about-hero-img, .about-story-img { width: 160px; height: 160px; }
+    }
+    </style>
+  <footer class="rupp-footer">
+    <div class="footer-content">
+        <div class="footer-left">
+            <img src="img/your-logo.png" alt="RUPP Logo">
+            <div>
+                <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                <p>Reserve Study & Meeting Rooms</p>
+                <p>DSE GROUP</p>
+            </div>
+        </div>
+        <div class="footer-right">
+            <div class="footer-section">
+                <h4>Address</h4>
+                <p >
+                    Building A, Room #A112, Research Office,<br>
+                    Royal University of Phnom Penh (RUPP),<br>
+                    Russian Federation Boulevard, Khan Toul Kork,<br>
+                    Phnom Penh 12150, Cambodia.
+                </p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>
+                    Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                    Tel: 855-23-883-640<br>
+                    Fax: 855-23-880-116<br>
+                    <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
+    </div>
+</footer>
+
+   <script src="{% static 'js/about.js' %}"></script>
+<script src="{% static 'js/Account_icon.js' %}"></script>
+<script src="{% static 'js/headerpage.js' %}"></script>
+
+</body>
+</html>

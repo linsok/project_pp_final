@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Reports - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .report-card {background: white;border-radius: 8px;box-shadow: 0 2px 8px rgba(0,0,0,0.1);padding: 20px;margin-bottom: 20px;border-left: 4px solid #07203F;}
+        .report-header {display: flex;justify-content: space-between;margin-bottom: 15px;padding-bottom: 10px;border-bottom: 1px solid #eee;}
+        .report-user {font-weight: bold;color: #07203F;}
+        .report-time {color: #666;font-size: 0.9em;}
+        .btn-reply {background: #07203F;color: white;border: none;padding: 8px 16px;border-radius: 4px;cursor: pointer;}
+        .btn-reply:hover {background: #0a3b7a;}
+        .reply-form {margin-top: 15px;padding: 15px;background: #f8f9fa;border-radius: 4px;display: none;}
+        .reply-form textarea {width: 100%;padding: 10px;margin-bottom: 10px;border: 1px solid #ddd;border-radius: 4px;min-height: 100px;}
+        .btn-send {background: #10b981;color: white;border: none;padding: 8px 16px;border-radius: 4px;cursor: pointer;}
+        .no-reports {text-align: center;padding: 40px;color: #666;}
+    </style>
+</head>
+<body>
+    <div class="topbar"></div>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">User Reports</div>
+                </div>
+            </div>
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Admin</span>
+                <button class="logout-btn" id="logoutBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 15px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="dropdown-menu" id="dropdownMenu">
+                <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="admin_manage_bookings.html"><i class="fas fa-eye"></i> Manage Bookings</a></li>
+                <li><a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a></li>
+                <li><a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a></li>
+                <li><a href="admin_settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="admin_manage_bookings.html"><i class="fas fa-calendar-alt"></i> Manage Bookings</a></li>
+                <li class="nav-item"><a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a></li>
+                <li class="nav-item active"><a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a></li>
+                <li class="nav-item"><a href="admin_settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="dashboard-container" style="max-width: 1000px; margin: 40px auto 0 auto; padding: 0 20px;">
+            <h2 style="color: #07203F;">User Reports</h2>
+            <div id="reportsContainer">
+                <div class="no-reports">
+                    <i class="fas fa-inbox" style="font-size: 3em; margin-bottom: 15px; color: #ccc;"></i>
+                    <p>No reports found</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            try {
+                // Try both endpoints for compatibility
+                let response = await fetch('/api/auth/logout/', { method: 'POST', credentials: 'include' });
+                if (!response.ok) {
+                    response = await fetch('/auth/logout/', { method: 'POST', credentials: 'include' });
+                }
+                // On success, redirect to login or home
+                window.location.href = 'index.html';
+            } catch (e) {
+                window.location.href = 'index.html';
+            }
+        });
+        // Sidebar toggle for mobile menu
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            var menu = document.getElementById('dropdownMenu');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+            } else {
+                menu.style.display = 'block';
+            }
+        });
+        // Load reports when page loads
+        document.addEventListener('DOMContentLoaded', loadReports);
+
+        // Function to load reports from the server
+        async function loadReports() {
+            try {
+                // Get token from localStorage or sessionStorage
+                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                const headers = token ? { 'Authorization': 'Token ' + token } : {};
+                const response = await fetch('http://localhost:8000/api/reports/', {
+                    credentials: 'include',
+                    headers
+                });
+                const reports = await response.json();
+                displayReports(reports);
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                showDemoData();
+            }
+        }
+
+        // Function to display reports
+        function displayReports(reports) {
+            const container = document.getElementById('reportsContainer');
+            if (!reports || reports.length === 0) return;
+            // Get replied report IDs from localStorage
+            let repliedReports = JSON.parse(localStorage.getItem('repliedReports') || '[]');
+            repliedReports = repliedReports.map(id => id.toString());
+            container.innerHTML = '';
+            reports.forEach(report => {
+                const reportDate = new Date(report.created_at).toLocaleString();
+                let userDisplay = 'Anonymous';
+                if (report.email) {
+                    userDisplay = report.email;
+                } else if (report.username) {
+                    userDisplay = report.username;
+                }
+                const isReplied = repliedReports.includes(report.id.toString());
+                container.innerHTML += `
+                    <div class="report-card" style="${isReplied ? 'border-left: 4px solid #10b981; background: #e6f9f0;' : ''}">
+                        <div class="report-header">
+                            <div class="report-user">
+                                <i class="fas fa-user-circle"></i> 
+                                ${userDisplay}
+                            </div>
+                            <div class="report-time">${reportDate}</div>
+                        </div>
+                        <div class="report-content">${report.description}</div>
+                        <button class="btn-reply" onclick="showReplyForm('${report.id}', '${report.email || ''}')" ${isReplied ? 'disabled style="background:#10b981;cursor:default;"' : ''}>
+                            <i class="fas fa-reply"></i> ${isReplied ? 'Replied' : 'Reply'}
+                        </button>
+                        <div class="reply-form" id="replyForm-${report.id}">
+                            <textarea id="replyMessage-${report.id}" placeholder="Type your reply here..."></textarea>
+                            <button class="btn-send" onclick="sendReply('${report.id}', '${report.email || ''}')">
+                                <i class="fas fa-paper-plane"></i> Send Reply
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Show reply form
+        function showReplyForm(reportId, userEmail) {
+            document.querySelectorAll('.reply-form').forEach(form => form.style.display = 'none');
+            const form = document.getElementById(`replyForm-${reportId}`);
+            if (form) form.style.display = 'block';
+        }
+
+        // Send reply
+        async function sendReply(reportId, userEmail) {
+            const message = document.getElementById(`replyMessage-${reportId}`).value.trim();
+            if (!message || !userEmail) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            try {
+                // Get token from localStorage or sessionStorage
+                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Token ' + token;
+                const response = await fetch('http://localhost:8000/api/reports/reply/', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({report_id: reportId, reply_message: message})
+                });
+                if (response.ok) {
+                    // Mark as replied in localStorage
+                    let repliedReports = JSON.parse(localStorage.getItem('repliedReports') || '[]');
+                    if (!repliedReports.includes(reportId.toString())) repliedReports.push(reportId.toString());
+                    localStorage.setItem('repliedReports', JSON.stringify(repliedReports));
+                    alert('Reply sent successfully');
+                    document.getElementById(`replyForm-${reportId}`).style.display = 'none';
+                    // Refresh reports to update UI
+                    loadReports();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert('Failed to send reply: ' + (errorData.error || response.statusText));
+                }
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                alert('Failed to send reply: ' + error);
+            }
+        }
+
+        // Demo data for testing
+        function showDemoData() {
+            const demoReports = [{
+                id: 1,
+                user: {email: 'user@example.com'},
+                description: 'Having trouble booking room 101 on Monday morning.',
+                created_at: new Date().toISOString()
+            }];
+            displayReports(demoReports);
+        }
+    </script>
+</body>
+</html>

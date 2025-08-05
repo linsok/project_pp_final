@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUPP Room Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+    <div class="topbar"></div>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <!-- Profile Section Header -->
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Luffy</span>
+                <span id="profileIconContainer">
+                    <i class="fas fa-user-circle profile-icon" id="profileIcon"></i>
+                </span>
+
+                <div class="profile-dropdown-menu" id="profileDropdown" >
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-briefcase"></i> Your account</span>
+                        <a href="setting.html"><i class="fas fa-cog dropdown-settings"></i></a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar-container" style="position: relative; width: 96px; height: 96px;">
+                            <img src="default.png" class="user-avatar" id="profileImg" alt="Profile Image" style="width: 96px; height: 96px; border-radius: 50%;" />
+                            <input type="file" id="profileImgInput" style="display:none;" accept="image/*" />
+                            <span id="editPhoto" style="position:absolute;top:35px;left:35px;display:none;cursor:pointer;">
+                                <i class="fas fa-camera"></i>
+                            </span>
+                        </div>
+                        <div class="user-details">
+                        <div class="user-name-dropdown">Your name here</div>
+                        <div class="user-email">your@remail.com</div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+                <ul class="dropdown-menu" id="dropdownMenu">
+                    <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
+                    <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
+                    <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
+                    <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
+                    <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
+                    <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
+                </ul>
+            </button>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="map.html"><i class="fas fa-calendar-alt"></i> Booking</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html"><i class="fas fa-info-circle"></i> About us</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content" style="margin-top: 100px;">
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <button class="nav-btn" onclick="previousMonth()">‹</button>
+                    <span id="monthYear"></span>
+                    <button class="nav-btn" onclick="nextMonth()">›</button>
+                </div>
+                <div class="calendar-grid">
+                    </div>
+            </div>
+        </div>
+
+        <div class="rooms-section">
+            <!-- Schedule Type Toggle Buttons -->
+            <div class="schedule-toggle-container" style="margin-bottom: 30px; text-align: center;">
+                <button class="schedule-toggle-btn active" id="roomScheduleBtn" onclick="showRoomSchedule()">
+                    <i class="fas fa-calendar-day"></i>
+                    Room Booking Schedule
+                </button>
+                <button class="schedule-toggle-btn" id="weeklyScheduleBtn" onclick="showWeeklySchedule()">
+                    <i class="fas fa-calendar-week"></i>
+                    Weekly Booking Schedule
+                </button>
+            </div>
+            
+            <!-- Room Booking Schedule Section -->
+            <div id="roomScheduleSection" class="schedule-section active">
+                <div class="available-room-header">
+                    <h2>Room Booking Schedule</h2>
+                    <div class="selected-date-display">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="selectedDateText">Select a date</span>
+                    </div>
+                </div>
+                
+                <!-- Time-slot table -->
+                <div class="room-availability-container">
+                    <div class="table-scroll-wrapper">
+                        <table class="room-availability-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <!-- Room columns will be dynamically added here -->
+                                </tr>
+                            </thead>
+                            <tbody id="roomAvailabilityBody">
+                                <!-- Time slots will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weekly Booking Schedule Section -->
+            <div id="weeklyScheduleSection" class="schedule-section">
+                <div class="available-room-header">
+                    <h2>Weekly Booking Schedule</h2>
+                </div>
+                
+                <!-- Room Selector -->
+                <div class="weekly-room-selector">
+                    <label for="weeklyRoomSelect">Select Room:</label>
+                    <select id="weeklyRoomSelect">
+                        <option value="">Choose a room</option>
+                        <!-- Options will be dynamically added -->
+                    </select>
+                </div>
+                
+                <!-- Week Navigation -->
+                <div id="weekNavContainer" style="display: flex; align-items: center; justify-content: center; margin: 10px 0;"></div>
+                <div class="room-availability-container">
+                    <div class="table-scroll-wrapper">
+                        <table class="weekly-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-column">Time</th>
+                                    <th class="day-column">Monday</th>
+                                    <th class="day-column">Tuesday</th>
+                                    <th class="day-column">Wednesday</th>
+                                    <th class="day-column">Thursday</th>
+                                    <th class="day-column">Friday</th>
+                                    <th class="day-column">Saturday</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyScheduleBody">
+                                <!-- Weekly schedule will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<footer class="rupp-footer">
+    <div class="footer-content">
+        <div class="footer-left">
+            <img src="img/your-logo.png" alt="RUPP Logo">
+            <div>
+                <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                <p>Reserve Study & Meeting Rooms</p>
+                <p>DSE GROUP</p>
+            </div>
+        </div>
+        <div class="footer-right">
+            <div class="footer-section">
+                <h4>Address</h4>
+                <p >
+                    Building A, Room #A112, Research Office,<br>
+                    Royal University of Phnom Penh (RUPP),<br>
+                    Russian Federation Boulevard, Khan Toul Kork,<br>
+                    Phnom Penh 12150, Cambodia.
+                </p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>
+                    Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                    Tel: 855-23-883-640<br>
+                    Fax: 855-23-880-116<br>
+                    <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
+    </div>
+</footer>
+
+
+
+   
+
+   <script src="{% static 'js/message_system.js' %}"></script>
+<script src="{% static 'js/available_room.js' %}"></script>
+<script src="{% static 'js/Account_icon.js' %}"></script>
+<script src="{% static 'js/headerpage.js' %}"></script>
+</body>
+
+</html>

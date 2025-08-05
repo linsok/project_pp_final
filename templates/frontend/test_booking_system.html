@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #07203f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1e40af;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Room Booking System - End-to-End Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Login Test</h2>
+        <input type="email" id="email" placeholder="Email" value="test@example.com">
+        <input type="password" id="password" placeholder="Password" value="testpassword">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Room Booking Test</h2>
+        <select id="buildingName">
+            <option value="Building A">Building A</option>
+            <option value="Building B">Building B</option>
+            <option value="Building C">Building C</option>
+        </select>
+        <input type="text" id="roomNumber" placeholder="Room Number" value="A101">
+        <input type="date" id="bookingDate" value="">
+        <input type="time" id="startTime" value="09:00">
+        <input type="time" id="endTime" value="10:00">
+        <input type="text" id="purpose" placeholder="Purpose" value="Meeting">
+        <button onclick="testBooking()">Test Booking</button>
+        <div id="bookingResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Booking History Test</h2>
+        <button onclick="testBookingHistory()">Test Booking History</button>
+        <div id="historyResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Set default date to tomorrow
+        document.getElementById('bookingDate').value = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        
+        let authToken = localStorage.getItem('authToken');
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    authToken = data.key;
+                    localStorage.setItem('authToken', authToken);
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Login successful! Token: ${authToken.substring(0, 20)}...`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Login failed: ${JSON.stringify(data)}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testBooking() {
+            if (!authToken) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const bookingData = {
+                building_name: document.getElementById('buildingName').value,
+                room_number: document.getElementById('roomNumber').value,
+                booking_date: document.getElementById('bookingDate').value,
+                start_time: document.getElementById('startTime').value,
+                end_time: document.getElementById('endTime').value,
+                purpose: document.getElementById('purpose').value
+            };
+            
+            const resultDiv = document.getElementById('bookingResult');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/bookings/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${authToken}`
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Booking successful! ID: ${data.id}<br>Room: ${data.room_details?.roomNumber} in ${data.room_details?.buildingName}<br>Date: ${data.booking_date} at ${data.start_time}-${data.end_time}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Booking failed: ${JSON.stringify(data)}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testBookingHistory() {
+            if (!authToken) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('historyResult');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/bookings/my/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Token ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    if (data.length === 0) {
+                        resultDiv.innerHTML = `✅ No bookings found (this is normal for a new account)`;
+                    } else {
+                        resultDiv.innerHTML = `✅ Found ${data.length} booking(s):<br>` + 
+                            data.map(booking => 
+                                `- Booking #${booking.id}: Room ${booking.room_details?.roomNumber} on ${booking.booking_date} (${booking.status})`
+                            ).join('<br>');
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ History fetch failed: ${JSON.stringify(data)}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-login if token exists
+        if (authToken) {
+            document.getElementById('loginResult').style.display = 'block';
+            document.getElementById('loginResult').className = 'result success';
+            document.getElementById('loginResult').innerHTML = `✅ Already logged in! Token: ${authToken.substring(0, 20)}...`;
+        }
+    </script>
+</body>
+</html>

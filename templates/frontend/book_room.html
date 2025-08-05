@@ -1,0 +1,384 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUPP Room Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+  <div class="topbar"></div>
+  <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <!-- Profile Section Header -->
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Luffy</span>
+                <span id="profileIconContainer">
+                    <i class="fas fa-user-circle profile-icon" id="profileIcon"></i>
+                </span>
+
+                <div class="profile-dropdown-menu" id="profileDropdown" >
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-briefcase"></i> Your account</span>
+                        <a href="setting.html"><i class="fas fa-cog dropdown-settings"></i></a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar-container" style="position: relative; width: 96px; height: 96px;">
+                            <img src="default.png" class="user-avatar" id="profileImg" alt="Profile Image" style="width: 96px; height: 96px; border-radius: 50%;" />
+                            <input type="file" id="profileImgInput" style="display:none;" accept="image/*" />
+                            <span id="editPhoto" style="position:absolute;top:35px;left:35px;display:none;cursor:pointer;">
+                                <i class="fas fa-camera"></i>
+                            </span>
+                        </div>
+                        <div class="user-details">
+                        <div class="user-name-dropdown">Your name here</div>
+                        <div class="user-email">your@remail.com</div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+                <ul class="dropdown-menu" id="dropdownMenu">
+                    <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
+                    <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
+                    <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
+                    <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
+                    <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
+                    <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
+                </ul>
+            </button>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="book_room.html"><i class="fas fa-calendar-alt"></i> Booking</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html"><i class="fas fa-info-circle"></i> About us</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="form-container">
+            <h1 class="page-heading">Booking Form</h1>
+            <h2 class="form-title">Please complete the form below to reserve a room</h2
+
+            <!-- Booking summary auto-filled from available room selection -->
+            <div id="bookingSummary" style="background:#f8f9fa;padding:10px 15px;margin-bottom:15px;border-radius:6px;border:1px solid #e0e0e0;display:none;font-weight:500;font-size:1.1em;">
+              <span id="summaryRoom"></span> | <span id="summaryDate"></span> | <span id="summaryTime"></span>
+            </div>
+
+            <form>
+                <div class="form-group">
+                    <label class="form-label" for="firstName">Name <span class="required-star">*</span></label>
+                    <div class="form-grid">
+                        <div>
+                            <input type="text" id="firstName" class="form-control" placeholder="First name" required>
+                            <div class="input-hint">First name</div>
+                        </div>
+                        <div>
+                            <input type="text" id="surname" class="form-control" placeholder="Surname" required>
+                            <div class="input-hint">Surname</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-grid">
+                        <div>
+                            <label class="form-label" for="email">E-mail <span class="required-star">*</span></label>
+                            <input type="email" id="email" class="form-control" placeholder="ex:myname@example.com" required>
+                            <div class="input-hint">ex:myname@example.com</div>
+                        </div>
+                        <div>
+                            <label class="form-label" for="phoneNumber">Phone Number</label>
+                            <input type="tel" id="phoneNumber" class="form-control" placeholder="(000) 000-0000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="month">Date <span class="required-star">*</span></label>
+                    <div class="form-grid date-select-group">
+                        <div>
+                            <select id="month" class="form-control" required>
+                                <option value="">Please select a month</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                            <div class="input-hint">Month</div>
+                        </div>
+                        <div>
+                            <select id="day" class="form-control" required>
+                                <option value="">Please select a day</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                                <option value="16">16</option>
+                                <option value="17">17</option>
+                                <option value="18">18</option>
+                                <option value="19">19</option>
+                                <option value="20">20</option>
+                                <option value="21">21</option>
+                                <option value="22">22</option>
+                                <option value="23">23</option>
+                                <option value="24">24</option>
+                                <option value="25">25</option>
+                                <option value="26">26</option>
+                                <option value="27">27</option>
+                                <option value="28">28</option>
+                                <option value="29">29</option>
+                                <option value="30">30</option>
+                                <option value="31">31</option>
+                                </select>
+                            <div class="input-hint">Day</div>
+                        </div>
+                        <div>
+                            <select id="year" class="form-control" required>
+                                <option value="">Please select a year</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                            </select>
+                            <div class="input-hint">Year</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="building">Where to book <span class="required-star">*</span></label>
+                    <div class="form-grid">
+                        <div>
+                            <select id="building" class="form-control" required>
+                                <option value="">Please select a building</option>
+                                <option value="STEM">STEM</option>
+                                <option value="Building A">Building A</option>
+                                <option value="NICC">NICC</option>
+                                <option value="Library">Library</option>
+                                <option value="Building B">Building B</option>
+                                <option value="Building C">Building C</option>
+                                <option value="Building D">Building D</option>
+                                <option value="Building T">Building T</option>
+                                <option value="CJCC">CJCC</option>
+                                <option value="CKCC">CKCC</option>
+                                <option value="DMC">DMC</option>
+                                <option value="IISP">IISP</option>
+                            </select>
+                            <div class="input-hint">Building</div>
+                        </div>
+                        <div>
+                            <input type="text" id="roomNumber" class="form-control" placeholder="Please enter room number" required>
+                            <div class="input-hint">Room number</div>
+                        </div>
+                        <div>
+                            <select id="capacity" class="form-control" required>
+                                <option>Please select capacity</option>
+                                <option>1-10 people</option>
+                                <option>11-25 people</option>
+                                <option>26-50 people</option>
+                                <option>51-100 people</option>
+                                <option>100+ people</option>
+                            </select>
+                            <div class="input-hint">Number of people</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="timeSet">Time <span class="required-star">*</span></label>
+                    <div class="form-grid time-select-group">
+                        <div>
+                            
+                            <input type="time" id="timeFrom" class="form-control">
+                            <div class="input-hint">To time</div>
+                            <input type="time" id="timeTo" class="form-control">
+
+                            
+                        </div>
+                        <div>
+                            <select id="role" class="form-control" required>
+                                <option value="">Please select your role</option>
+                                <option value="student">Student</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="staff">Staff</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="input-hint">Role</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="meetingAgenda">Brief Description of meeting Agenda</label>
+                    <textarea id="meetingAgenda" class="form-control" rows="4" placeholder="Write here..."></textarea>
+                </div>
+
+                <button type="submit" class="form-button">Reserve room</button>
+            </form>
+        </div>
+    </main>
+
+
+
+   <footer class="rupp-footer">
+    <div class="footer-content">
+        <div class="footer-left">
+            <img src="img/your-logo.png" alt="RUPP Logo">
+            <div>
+                <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                <p>Reserve Study & Meeting Rooms</p>
+                <p>DSE GROUP</p>
+            </div>
+        </div>
+        <div class="footer-right">
+            <div class="footer-section">
+                <h4>Address</h4>
+                <p >
+                    Building A, Room #A112, Research Office,<br>
+                    Royal University of Phnom Penh (RUPP),<br>
+                    Russian Federation Boulevard, Khan Toul Kork,<br>
+                    Phnom Penh 12150, Cambodia.
+                </p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>
+                    Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                    Tel: 855-23-883-640<br>
+                    Fax: 855-23-880-116<br>
+                    <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
+    </div>    </footer>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="bookingConfirmationModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header">
+                <h3>Confirm Your Booking</h3>
+                <p>Please review your booking details below</p>
+            </div>
+            <div class="booking-confirmation-body">
+                <div class="booking-details-grid" id="bookingDetailsGrid">
+                    <!-- Details will be populated by JavaScript -->
+                </div>
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="confirmBookingBtn">
+                        <i class="fas fa-check"></i>
+                        Yes, Book Room
+                    </button>
+                    <button type="button" class="booking-btn booking-btn-cancel" id="cancelBookingBtn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <h3 id="successTitle">✅ Success!</h3>
+                <p id="successMessage">Operation completed successfully</p>
+            </div>
+            <div class="booking-confirmation-body">
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="viewBookingsBtn">
+                        <i class="fas fa-history"></i>
+                        View My Bookings
+                    </button>
+                    <button type="button" class="booking-btn booking-btn-cancel" id="closeSuccessBtn">
+                        <i class="fas fa-home"></i>
+                        Stay Here
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="booking-confirmation-modal">
+        <div class="booking-confirmation-content">
+            <div class="booking-confirmation-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <h3 id="errorTitle">❌ Error</h3>
+                <p id="errorMessage">Something went wrong</p>
+            </div>
+            <div class="booking-confirmation-body">
+                <div class="booking-confirmation-buttons">
+                    <button type="button" class="booking-btn booking-btn-confirm" id="closeErrorBtn">
+                        <i class="fas fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/message_system.js' %}"></script>
+<script src="{% static 'js/book_room.js' %}"></script>
+<script src="{% static 'js/Account_icon.js' %}"></script>
+
+
+</body>
+</html>

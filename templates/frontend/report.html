@@ -1,0 +1,171 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUPP Room Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body style="background: #f8fafc;" class="report-page">
+    <div class="topbar"></div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <!-- Profile Section Header -->
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Luffy</span>
+                <span id="profileIconContainer">
+                    <i class="fas fa-user-circle profile-icon" id="profileIcon"></i>
+                </span>
+                <div class="profile-dropdown-menu" id="profileDropdown">
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-briefcase"></i> Your account</span>
+                        <a href="setting.html"><i class="fas fa-cog dropdown-settings"></i></a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar-container" style="position: relative; width: 96px; height: 96px;">
+                            <img src="default.png" class="user-avatar" id="profileImg" alt="Profile Image" style="width: 96px; height: 96px; border-radius: 50%;" />
+                            <input type="file" id="profileImgInput" style="display:none;" accept="image/*" />
+                            <span id="editPhoto" style="position:absolute;top:35px;left:35px;display:none;cursor:pointer;">
+                                <i class="fas fa-camera"></i>
+                            </span>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name-dropdown">Your name here</div>
+                            <div class="user-email">your@remail.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+                <ul class="dropdown-menu" id="dropdownMenu">
+                    <li><a href="book_room.html"><i class="fas fa-calendar-plus"></i> Book Room</a></li>
+                    <li><a href="view_booking.html"><i class="fas fa-eye"></i> View Booking</a></li>
+                    <li><a href="available_room.html"><i class="fas fa-door-open"></i> Available Room</a></li>
+                    <li><a href="booking_history.html"><i class="fas fa-history"></i> Booking history</a></li>
+                    <li><a href="map.html"><i class="fas fa-map"></i> Map</a></li>
+                    <li><a href="setting.html"><i class="fas fa-cog"></i> Setting</a></li>
+                </ul>
+            </button>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="home.html"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="book_room.html"><i class="fas fa-calendar-alt"></i> Booking</a>
+                </li>
+                <li class="nav-item">
+                    <a href="about.html"><i class="fas fa-info-circle"></i> About us</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main style="min-height: calc(100vh - 130px); background: #f8fafc; display: flex; flex-direction: column; padding-bottom: 0;">
+        <div style="flex: 1; padding: 60px 0 40px 0;">
+            <div class="report-container">
+                <div class="page-header">
+                    <i class="fas fa-chevron-left back-button" id="backButton"></i>
+                    <h1 class="page-title">Report a Problem</h1>
+                </div>
+                
+                <form id="reportForm">
+                    <div class="report-form-group">
+                        <label for="reportDescription" class="report-form-label">
+                            Describe the problem you encountered:
+                        </label>
+                        <textarea 
+                            id="reportDescription" 
+                            class="report-form-control" 
+                            placeholder="Please provide a detailed description of the problem you encountered. Include any error messages, steps to reproduce the issue, and any other relevant information that could help us resolve the problem."
+                            required
+                            maxlength="1000">
+                        </textarea>
+                        <div class="form-meta">
+                            <span class="form-hint">Minimum 10 characters required</span>
+                            <span class="char-counter">
+                                <span id="charCounter">0</span>/1000 characters
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="form-button">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Report
+                        </button>
+                    </div>
+                    
+                    <!-- Status message area -->
+                    <div id="statusMessage" class="status-message" style="display: none;">
+                        <div id="statusText"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="rupp-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="img/your-logo.png" alt="RUPP Logo">
+                <div>
+                    <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                    <p>Reserve Study & Meeting Rooms</p>
+                    <p>DSE GROUP</p>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-section">
+                    <h4>Address</h4>
+                    <p>
+                        Building A, Room #A112, Research Office,<br>
+                        Royal University of Phnom Penh (RUPP),<br>
+                        Russian Federation Boulevard, Khan Toul Kork,<br>
+                        Phnom Penh 12150, Cambodia.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                        Tel: 855-23-883-640<br>
+                        Fax: 855-23-880-116<br>
+                        <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright &copy; 2023 CJBAR RUPP, All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/report.js' %}"></script>
+<script src="{% static 'js/Account_icon.js' %}"></script>
+
+</body>
+</html>

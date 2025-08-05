@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard Debug</h1>
+    
+    <div>
+        <h3>Authentication Status</h3>
+        <div id="authStatus" class="result info">Checking...</div>
+    </div>
+    
+    <div>
+        <h3>Test Admin Dashboard API</h3>
+        <button onclick="testAdminDashboard()">Test Dashboard API</button>
+        <div id="dashboardResult" class="result"></div>
+    </div>
+    
+    <div>
+        <h3>Test User Profile</h3>
+        <button onclick="testUserProfile()">Test User Profile</button>
+        <div id="profileResult" class="result"></div>
+    </div>
+    
+    <div>
+        <h3>Test Authentication</h3>
+        <button onclick="testAuth()">Test Auth Endpoint</button>
+        <div id="authResult" class="result"></div>
+    </div>
+    
+    <div>
+        <h3>Login Test</h3>
+        <input type="email" id="testEmail" placeholder="Email" value="admin@example.com">
+        <input type="password" id="testPassword" placeholder="Password" value="adminpass">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <script>
+        // Check authentication status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+        });
+
+        function checkAuthStatus() {
+            const token = localStorage.getItem('authToken');
+            const authStatus = document.getElementById('authStatus');
+            
+            if (!token) {
+                authStatus.className = 'result error';
+                authStatus.innerHTML = '❌ No authentication token found';
+                return;
+            }
+            
+            authStatus.className = 'result success';
+            authStatus.innerHTML = `✅ Token found: ${token.substring(0, 20)}...`;
+        }
+
+        async function testAdminDashboard() {
+            const resultDiv = document.getElementById('dashboardResult');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result info';
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ No authentication token found';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/admin/dashboard-data/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Dashboard API Success!<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Dashboard API Failed:<br>Status: ${response.status}<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        async function testUserProfile() {
+            const resultDiv = document.getElementById('profileResult');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result info';
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ No authentication token found';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/profile/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Profile API Success!<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Profile API Failed:<br>Status: ${response.status}<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        async function testAuth() {
+            const resultDiv = document.getElementById('authResult');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result info';
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ No authentication token found';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/auth/user/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Auth API Success!<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Auth API Failed:<br>Status: ${response.status}<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = 'Testing...';
+            resultDiv.className = 'result info';
+            
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            try {
+                const response = await fetch('http://localhost:8000/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                
+                if (response.ok && data.key) {
+                    localStorage.setItem('authToken', data.key);
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Login Success!<br>Token: ${data.key.substring(0, 20)}...<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    checkAuthStatus(); // Update auth status
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Login Failed:<br>Status: ${response.status}<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

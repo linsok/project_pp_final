@@ -1,0 +1,802 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+<body>
+    <div class="topbar"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Admin</span>
+                <button class="logout-btn" id="logoutBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 15px;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+            </div>
+        </div>
+    </header>
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="dropdown-menu" id="dropdownMenu">
+                <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="admin_manage_bookings.html"><i class="fas fa-eye"></i> Manage Bookings</a></li>
+                <li><a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a></li>
+                <li><a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a></li>
+                <li><a href="admin_settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_manage_bookings.html"><i class="fas fa-calendar-alt"></i> Manage Bookings</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <main>
+        <div class="dashboard-container" style="max-width:1200px;margin:40px auto 0 auto;">
+            <h2 style="color:#07203F;margin-bottom:32px;">Welcome, Admin!</h2>
+            <div class="dashboard-cards" style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;">
+                <div class="dashboard-card" style="background:#07203F;color:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:32px 40px;min-width:220px;flex:1 1 220px;max-width:320px;text-align:center;">
+                    <i class="fas fa-users" style="font-size:2.5em;margin-bottom:12px;"></i>
+                    <div style="font-size:2em;font-weight:700;" id="userCount">-</div>
+                    <div style="font-size:1.1em;opacity:0.85;">Total Users</div>
+                </div>
+                <div class="dashboard-card" style="background:#2c5282;color:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:32px 40px;min-width:220px;flex:1 1 220px;max-width:320px;text-align:center;">
+                    <i class="fas fa-door-open" style="font-size:2.5em;margin-bottom:12px;"></i>
+                    <div style="font-size:2em;font-weight:700;" id="roomCount">-</div>
+                    <div style="font-size:1.1em;opacity:0.85;">Total Rooms</div>
+                </div>
+                <div class="dashboard-card" style="background:#10b981;color:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);padding:32px 40px;min-width:220px;flex:1 1 220px;max-width:320px;text-align:center;">
+                    <i class="fas fa-calendar-check" style="font-size:2.5em;margin-bottom:12px;"></i>
+                    <div style="font-size:2em;font-weight:700;" id="bookingCount">-</div>
+                    <div style="font-size:1.1em;opacity:0.85;">Total Bookings</div>
+                </div>
+            </div>
+
+            <!-- Data Tables Section -->
+            <div class="data-tables-section" style="margin-top: 40px;">
+                <!-- Table Navigation Tabs -->
+                <div class="table-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+                    <button class="tab-btn active" data-tab="recent-bookings" style="padding: 12px 24px; border: none; background: #07203F; color: white; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-calendar-alt"></i> Recent Bookings
+                    </button>
+                    <button class="tab-btn" data-tab="users" style="padding: 12px 24px; border: none; background: #6c757d; color: white; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-users"></i> Users
+                    </button>
+                    <button class="tab-btn" data-tab="rooms" style="padding: 12px 24px; border: none; background: #6c757d; color: white; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-door-open"></i> Rooms
+                    </button>
+                </div>
+
+                <!-- Recent Bookings Table -->
+                <div class="table-content active" id="recent-bookings" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+                    <div class="table-header" style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #dee2e6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-calendar-alt"></i> Recent Bookings
+                                </h3>
+                                <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Latest booking activities in the system</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="statusFilter" onchange="filterTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                                    <option value="">All Statuses</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                                <input type="date" id="dateFilter" onchange="filterTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table id="recent-bookings-table" class="data-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #07203F; color: white;">
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">User</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Room</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Date</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Time</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Purpose</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Status</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-bookings-tbody">
+                                <tr>
+                                    <td colspan="7" style="padding: 40px; text-align: center; color: #6c757d;">
+                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5em; margin-bottom: 10px;"></i>
+                                        <br>Loading recent bookings...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-content" id="users" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; display: none;">
+                    <div class="table-header" style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #dee2e6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-users"></i> System Users
+                                </h3>
+                                <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">All registered users in the system</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="roleFilter" onchange="filterUsersTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                                <input type="date" id="joinDateFilter" onchange="filterUsersTable()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ced4da; background-color: white; color: #495057; font-size: 14px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table id="users-table" class="data-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #07203F; color: white;">
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Username</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Email</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Phone</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Role</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Joined</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody">
+                                <tr>
+                                    <td colspan="6" style="padding: 40px; text-align: center; color: #6c757d;">
+                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5em; margin-bottom: 10px;"></i>
+                                        <br>Loading users...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Rooms Table -->
+                <div class="table-content" id="rooms" style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; display: none;">
+                    <div class="table-header" style="background: #f8f9fa; padding: 20px; border-bottom: 1px solid #dee2e6;">
+                        <h3 style="margin: 0; color: #07203F; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-door-open"></i> Available Rooms
+                        </h3>
+                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">All rooms in the system</p>
+                    </div>
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #07203F; color: white;">
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Room Number</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Building</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Floor</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Type</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Capacity</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Status</th>
+                                    <th style="padding: 15px; text-align: left; border-bottom: 1px solid #dee2e6;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rooms-tbody">
+                                <tr>
+                                    <td colspan="7" style="padding: 40px; text-align: center; color: #6c757d;">
+                                        <i class="fas fa-spinner fa-spin" style="font-size: 1.5em; margin-bottom: 10px;"></i>
+                                        <br>Loading rooms...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="rupp-footer" style="margin-top:60px;">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="img/your-logo.png" alt="RUPP Logo">
+                <div>
+                    <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                    <p>Reserve Study & Meeting Rooms</p>
+                    <p>DSE GROUP</p>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-section">
+                    <h4>Address</h4>
+                    <p >
+                        Building A, Room #A112, Research Office,<br>
+                        Royal University of Phnom Penh (RUPP),<br>
+                        Russian Federation Boulevard, Khan Toul Kork,<br>
+                        Phnom Penh 12150, Cambodia.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                        Tel: 855-23-883-640<br>
+                        Fax: 855-23-880-116<br>
+                        <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright 2023 CJBAR RUPP, All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        // Simple logout functionality for admin
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Navigation menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            // Toggle sidebar menu
+            sidebarToggle.addEventListener('click', function() {
+                dropdownMenu.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!sidebarToggle.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // Highlight current page in navigation
+            const currentPage = window.location.pathname.split('/').pop();
+            const navLinks = document.querySelectorAll('.nav-menu a, .dropdown-menu a');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+    </script>
+    <script>
+        // Fetch admin dashboard data from the API
+        console.log('Admin dashboard script started');
+        
+        // Function to load dashboard data
+        async function loadDashboardData() {
+            const token = localStorage.getItem('authToken');
+            console.log('Token found:', !!token);
+            
+            if (!token) {
+                console.log('No token found, showing demo data');
+                // Show demo data if no token (for testing purposes)
+                document.getElementById('userCount').textContent = '15';
+                document.getElementById('roomCount').textContent = '15';
+                document.getElementById('bookingCount').textContent = '35';
+                return;
+            }
+
+            try {
+                console.log('Making API request to dashboard data endpoint...');
+                const response = await fetch('http://localhost:8000/api/admin/dashboard-data/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('Unauthorized - showing demo data');
+                        // Show demo data if unauthorized
+                        document.getElementById('userCount').textContent = '15';
+                        document.getElementById('roomCount').textContent = '15';
+                        document.getElementById('bookingCount').textContent = '35';
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Dashboard data received:', data);
+                
+                // Update the dashboard with real data
+                document.getElementById('userCount').textContent = data.users || 0;
+                document.getElementById('roomCount').textContent = data.rooms || 0;
+                document.getElementById('bookingCount').textContent = data.bookings || 0;
+                console.log('Dashboard updated with real data');
+                
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                // Show demo data on error
+                document.getElementById('userCount').textContent = '15';
+                document.getElementById('roomCount').textContent = '15';
+                document.getElementById('bookingCount').textContent = '35';
+            }
+        }
+
+        // Load data when page loads
+        loadDashboardData();
+        
+        // Table tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tableContents = document.querySelectorAll('.table-content');
+            
+            // Tab switching functionality
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabButtons.forEach(btn => {
+                        btn.style.background = '#6c757d';
+                    });
+                    tableContents.forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Add active class to clicked tab and show content
+                    this.style.background = '#07203F';
+                    document.getElementById(targetTab).style.display = 'block';
+                    
+                    // Load data for the selected tab
+                    loadTableData(targetTab);
+                });
+            });
+            
+            // Load initial data for the active tab (recent bookings)
+            loadTableData('recent-bookings');
+        });
+        
+        // Function to load table data
+        async function loadTableData(tableType) {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                showDemoData(tableType);
+                return;
+            }
+            
+            try {
+                let endpoint = '';
+                switch(tableType) {
+                    case 'recent-bookings':
+                        endpoint = '/api/admin/recent-bookings/';
+                        break;
+                    case 'users':
+                        endpoint = '/api/admin/users/';
+                        break;
+                    case 'rooms':
+                        endpoint = '/api/admin/rooms/';
+                        break;
+                }
+                
+                const response = await fetch(`http://localhost:8000${endpoint}`, {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showDemoData(tableType);
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                populateTable(tableType, data);
+                
+            } catch (error) {
+                console.error(`Error loading ${tableType} data:`, error);
+                showDemoData(tableType);
+            }
+        }
+        
+        // Function to populate table with real data
+        function populateTable(tableType, data) {
+            const tbody = document.getElementById(`${tableType}-tbody`);
+            
+            if (!tbody) return;
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="padding: 40px; text-align: center; color: #6c757d;">
+                            <i class="fas fa-inbox" style="font-size: 1.5em; margin-bottom: 10px;"></i>
+                            <br>No data available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            switch(tableType) {
+                case 'recent-bookings':
+                    data.forEach(booking => {
+                        const statusClass = getStatusClass(booking.status);
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 15px;">
+                                    <div style="font-weight: 500;">${booking.user_name || 'N/A'}</div>
+                                </td>
+                                <td style="padding: 15px;">
+                                    <div style="font-weight: 500;">${booking.room_details?.roomNumber || 'N/A'}</div>
+                                    <div style="font-size: 12px; color: #6c757d;">${booking.room_details?.buildingName || ''}</div>
+                                </td>
+                                <td style="padding: 15px;">${formatDate(booking.booking_date)}</td>
+                                <td style="padding: 15px;">${booking.start_time} - ${booking.end_time}</td>
+                                <td style="padding: 15px;">${booking.purpose || 'N/A'}</td>
+                                <td style="padding: 15px;">
+                                    <span class="status-badge ${statusClass}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                        ${booking.status}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px;">
+                                    <button class="action-btn" onclick="viewBooking(${booking.id})" style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editBooking(${booking.id})" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    break;
+                    
+                case 'users':
+                    data.forEach(user => {
+                        const roleClass = user.is_staff ? 'admin-role' : 'user-role';
+                        const roleText = user.is_staff ? 'Admin' : 'User';
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 15px;">
+                                    <div style="font-weight: 500;">${user.username}</div>
+                                </td>
+                                <td style="padding: 15px;">${user.email}</td>
+                                <td style="padding: 15px;">${user.phone || 'N/A'}</td>
+                                <td style="padding: 15px;">
+                                    <span class="role-badge ${roleClass}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                        ${roleText}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px;">${formatDate(user.date_joined)}</td>
+                                <td style="padding: 15px;">
+                                    <button class="action-btn" onclick="viewUser('${user.username}')" style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editUser('${user.username}')" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    break;
+                    
+                case 'rooms':
+                    data.forEach(room => {
+                        const availabilityStatus = room.availability_status;
+                        const statusText = availabilityStatus?.is_available ? 'Available' : 'Occupied';
+                        const statusClass = availabilityStatus?.is_available ? 'available' : 'occupied';
+                        
+                        html += `
+                            <tr style="border-bottom: 1px solid #dee2e6;">
+                                <td style="padding: 15px;">
+                                    <div style="font-weight: 500;">${room.roomNumber}</div>
+                                </td>
+                                <td style="padding: 15px;">${room.buildingName}</td>
+                                <td style="padding: 15px;">${room.floorName}</td>
+                                <td style="padding: 15px;">${room.roomType}</td>
+                                <td style="padding: 15px;">${room.capacity} people</td>
+                                <td style="padding: 15px;">
+                                    <span class="status-badge ${statusClass}" style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                        ${statusText}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px;">
+                                    <button class="action-btn" onclick="viewRoom(${room.id})" style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn" onclick="editRoom(${room.id})" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    break;
+            }
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Function to filter table data
+        function filterTable() {
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value; // YYYY-MM-DD format
+            
+            // Get all table rows in the tbody (skip the header row)
+            const rows = document.querySelectorAll('#recent-bookings-table tbody tr');
+            let hasVisibleRows = false;
+            
+            rows.forEach(row => {
+                if (row.cells.length < 6) return; // Skip rows that don't have enough cells
+                
+                const statusCell = row.cells[5]; // 6th column (0-based index)
+                const dateCell = row.cells[2];   // 3rd column (0-based index)
+                
+                try {
+                    const status = statusCell.textContent.trim().toLowerCase();
+                    const dateText = dateCell.textContent.trim();
+                    
+                    // Check if this row matches all active filters
+                    const matchesStatus = !statusFilter || status.includes(statusFilter);
+                    const matchesDate = !dateFilter || compareDates(dateText, dateFilter);
+                    
+                    // Show or hide the row based on filter matches
+                    const shouldShow = matchesStatus && matchesDate;
+                    row.style.display = shouldShow ? '' : 'none';
+                    
+                    if (shouldShow) hasVisibleRows = true;
+                    
+                } catch (e) {
+                    console.error('Error filtering row:', e, row);
+                    row.style.display = 'none'; // Hide rows that cause errors
+                }
+            });
+            
+            // Show/hide no results message
+            const noResultsRow = document.getElementById('no-results-row');
+            if (!hasVisibleRows) {
+                if (!noResultsRow) {
+                    const tbody = document.querySelector('#recent-bookings-table tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'no-results-row';
+                    newRow.innerHTML = `
+                        <td colspan="7" style="padding: 40px; text-align: center; color: #6c757d;">
+                            <i class="fas fa-search" style="font-size: 1.5em; margin-bottom: 10px; color: #6c757d;"></i>
+                            <br>No bookings match the selected filters
+                        </td>`;
+                    tbody.appendChild(newRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+        
+        // Function to filter users table
+        function filterUsersTable() {
+            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+            const joinDateFilter = document.getElementById('joinDateFilter').value; // YYYY-MM-DD format
+            
+            // Get all table rows in the tbody (skip the header row)
+            const rows = document.querySelectorAll('#users-table tbody tr');
+            let hasVisibleRows = false;
+            
+            rows.forEach(row => {
+                if (row.cells.length < 6) return; // Skip rows that don't have enough cells
+                
+                const roleCell = row.cells[3]; // 4th column (0-based index)
+                const joinDateCell = row.cells[4]; // 5th column (0-based index)
+                
+                try {
+                    const role = roleCell.textContent.trim().toLowerCase();
+                    const joinDateText = joinDateCell.textContent.trim();
+                    
+                    // Check if this row matches all active filters
+                    const matchesRole = !roleFilter || role === roleFilter;
+                    const matchesJoinDate = !joinDateFilter || compareDates(joinDateText, joinDateFilter);
+                    
+                    // Show or hide the row based on filter matches
+                    const shouldShow = matchesRole && matchesJoinDate;
+                    row.style.display = shouldShow ? '' : 'none';
+                    
+                    if (shouldShow) hasVisibleRows = true;
+                    
+                } catch (e) {
+                    console.error('Error filtering user row:', e, row);
+                    row.style.display = 'none'; // Hide rows that cause errors
+                }
+            });
+            
+            // Show/hide no results message
+            const noResultsRow = document.getElementById('no-users-results-row');
+            if (!hasVisibleRows) {
+                if (!noResultsRow) {
+                    const tbody = document.querySelector('#users-table tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'no-users-results-row';
+                    newRow.innerHTML = `
+                        <td colspan="6" style="padding: 40px; text-align: center; color: #6c757d;">
+                            <i class="fas fa-search" style="font-size: 1.5em; margin-bottom: 10px; color: #6c757d;"></i>
+                            <br>No users match the selected filters
+                        </td>`;
+                    tbody.appendChild(newRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+        
+        // Helper function to compare dates in different formats
+        function compareDates(tableDate, inputDate) {
+            try {
+                // Convert table date (e.g., "Jan 15, 2024") to Date object
+                const tableDateObj = new Date(tableDate);
+                const inputDateObj = new Date(inputDate);
+                
+                // Compare year, month, and day
+                return tableDateObj.getFullYear() === inputDateObj.getFullYear() &&
+                       tableDateObj.getMonth() === inputDateObj.getMonth() &&
+                       tableDateObj.getDate() === inputDateObj.getDate();
+            } catch (e) {
+                console.error('Error comparing dates:', e, {tableDate, inputDate});
+                return false;
+            }
+        }
+        
+        // Helper functions
+        function getStatusClass(status) {
+            switch(status.toLowerCase()) {
+                case 'confirmed': return 'confirmed';
+                case 'pending': return 'pending';
+                case 'cancelled': return 'cancelled';
+                default: return 'default';
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Action functions (placeholder)
+        function viewBooking(id) {
+            alert(`View booking ${id} - Redirect to booking details page`);
+        }
+        
+        function editBooking(id) {
+            alert(`Edit booking ${id} - Redirect to edit booking page`);
+        }
+        
+        function viewUser(username) {
+            alert(`View user ${username} - Redirect to user details page`);
+        }
+        
+        function editUser(username) {
+            alert(`Edit user ${username} - Redirect to edit user page`);
+        }
+        
+        function viewRoom(id) {
+            alert(`View room ${id} - Redirect to room details page`);
+        }
+        
+        function editRoom(id) {
+            alert(`Edit room ${id} - Redirect to edit room page`);
+        }
+        
+        // Function to show demo data
+        function showDemoData(tableType) {
+            const tbody = document.getElementById(`${tableType}-tbody`);
+            
+            if (!tbody) return;
+            
+            let html = '';
+            
+            switch(tableType) {
+                case 'recent-bookings':
+                    const demoBookings = [
+                        { id: 1, user_name: 'John Doe', room_details: { roomNumber: 'A101', buildingName: 'Building A' }, booking_date: '2024-01-15', start_time: '09:00', end_time: '11:00', purpose: 'Study Group', status: 'confirmed' },
+                        { id: 2, user_name: 'Jane Smith', room_details: { roomNumber: 'B205', buildingName: 'Building B' }, booking_date: '2024-01-15', start_time: '14:00', end_time: '16:00', purpose: 'Meeting', status: 'pending' },
+                        { id: 3, user_name: 'Mike Johnson', room_details: { roomNumber: 'C301', buildingName: 'Building C' }, booking_date: '2024-01-16', start_time: '10:00', end_time: '12:00', purpose: 'Presentation', status: 'confirmed' }
+                    ];
+                    populateTable(tableType, demoBookings);
+                    break;
+                    
+                case 'users':
+                    const demoUsers = [
+                        { username: 'admin', email: 'admin@rupp.edu.kh', phone: '+855 123 456 789', is_staff: true, date_joined: '2023-01-01' },
+                        { username: 'john_doe', email: 'john@rupp.edu.kh', phone: '+855 987 654 321', is_staff: false, date_joined: '2023-02-15' },
+                        { username: 'jane_smith', email: 'jane@rupp.edu.kh', phone: '+855 555 123 456', is_staff: false, date_joined: '2023-03-20' }
+                    ];
+                    populateTable(tableType, demoUsers);
+                    break;
+                    
+                case 'rooms':
+                    const demoRooms = [
+                        { id: 1, roomNumber: 'A101', buildingName: 'Building A', floorName: '1st Floor', roomType: 'Study Room', capacity: 20, availability_status: { is_available: true } },
+                        { id: 2, roomNumber: 'B205', buildingName: 'Building B', floorName: '2nd Floor', roomType: 'Meeting Room', capacity: 15, availability_status: { is_available: false } },
+                        { id: 3, roomNumber: 'C301', buildingName: 'Building C', floorName: '3rd Floor', roomType: 'Conference Room', capacity: 50, availability_status: { is_available: true } }
+                    ];
+                    populateTable(tableType, demoRooms);
+                    break;
+            }
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Dashboard data loads automatically when page loads
+    </script>
+    <script>
+        // Update the tab switching to reset filters when changing tabs
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Hide all table contents
+                document.querySelectorAll('.table-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.style.background = '#6c757d';
+                });
+                
+                // Show selected table and set button as active
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+                this.style.background = '#07203F';
+                
+                // Reset filters when switching tabs
+                if (tabId === 'recent-bookings') {
+                    document.getElementById('statusFilter').value = '';
+                    document.getElementById('dateFilter').value = '';
+                    filterTable();
+                } else if (tabId === 'users') {
+                    document.getElementById('roleFilter').value = '';
+                    document.getElementById('joinDateFilter').value = '';
+                    filterUsersTable();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

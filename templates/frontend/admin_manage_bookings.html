@@ -1,0 +1,692 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Manage Bookings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .admin-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .filter-section select, .filter-section input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .booking-table th, .booking-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .booking-table th {
+            background: #07203F;
+            color: white;
+            font-weight: 600;
+        }
+        .booking-table tr:hover {
+            background: #f8f9fa;
+        }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-confirmed { color: #27ae60; font-weight: bold; }
+        .status-cancelled { color: #e74c3c; font-weight: bold; }
+        .status-completed { color: #7f8c8d; font-weight: bold; }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-approve { background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #07203F;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="img/your-logo.png" alt="RUPP Logo" style="height:65px;">
+                </div>
+                <div>
+                    <h1 class="site-title">ROYAL UNIVERSITY OF PHNOM PENH</h1>
+                    <div class="site-subtitle">Reserve Study & Meeting Rooms</div>
+                </div>
+            </div>
+            <div class="profile-section" id="profileSection">
+                <span class="user-name">Admin</span>
+                <button class="logout-btn" id="logoutBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 15px;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="dropdown-menu" id="dropdownMenu">
+                <li><a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="admin_manage_bookings.html"><i class="fas fa-eye"></i> Manage Bookings</a></li>
+                <li><a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a></li>
+                <li><a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a></li>
+                <li><a href="admin_settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>&nbsp;&nbsp;
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin_dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_manage_bookings.html"><i class="fas fa-calendar-alt"></i> Manage Bookings</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_room_management.html"><i class="fas fa-door-open"></i> Room Management</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_user_reports.html"><i class="fas fa-flag"></i> User Reports</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="dashboard-container" style="max-width:1400px;margin:40px auto 0 auto;">
+            <h2 style="color:#07203F;margin-bottom:32px;">Manage Bookings</h2>
+            
+            <!-- Statistics Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalBookings">-</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingBookings">-</div>
+                    <div class="stat-label">Pending Approval</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="confirmedBookings">-</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayBookings">-</div>
+                    <div class="stat-label">Today's Bookings</div>
+                </div>
+            </div>
+
+            <!-- Admin Controls -->
+            <div class="admin-controls">
+                <div style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                    <span id="filterResults">Loading bookings...</span>
+                </div>
+                <div class="filter-section">
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select id="buildingFilter">
+                        <option value="">All Buildings</option>
+                    </select>
+                    <input type="date" id="dateFilter" placeholder="Filter by date">
+                    <button onclick="applyFilters()" style="background:#07203F;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                    <button onclick="clearFilters()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                    <button onclick="exportBookings()" style="background:#27ae60;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bookings Table -->
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Room</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody">
+                    <!-- Bookings will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="rupp-footer" style="margin-top:60px;">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="img/your-logo.png" alt="RUPP Logo">
+                <div>
+                    <h2>ROYAL UNIVERSITY OF PHNOM PENH</h2>
+                    <p>Reserve Study & Meeting Rooms</p>
+                    <p>DSE GROUP</p>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-section">
+                    <h4>Address</h4>
+                    <p>
+                        Building A, Room #A112, Research Office,<br>
+                        Royal University of Phnom Penh (RUPP),<br>
+                        Russian Federation Boulevard, Khan Toul Kork,<br>
+                        Phnom Penh 12150, Cambodia.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        Email: <a href="mailto:cjbar@rupp.edu.kh">cjbar@rupp.edu.kh</a> / <a href="mailto:editorialassistant@rupp.edu.kh">editorialassistant@rupp.edu.kh</a><br>
+                        Tel: 855-23-883-640<br>
+                        Fax: 855-23-880-116<br>
+                        <a href="https://www.rupp.edu.kh" target="_blank">www.rupp.edu.kh</a> (Website)
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright © 2023 CJBAR RUPP, All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple logout functionality for admin
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Navigation menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            // Toggle sidebar menu
+            sidebarToggle.addEventListener('click', function() {
+                dropdownMenu.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!sidebarToggle.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // Highlight current page in navigation
+            const currentPage = window.location.pathname.split('/').pop();
+            const navLinks = document.querySelectorAll('.nav-menu a, .dropdown-menu a');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+    </script>
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        // Load bookings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBookings();
+            loadStats();
+            loadBuildingFilters();
+            
+            // Add event listeners for real-time filtering
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('buildingFilter').addEventListener('change', applyFilters);
+            document.getElementById('dateFilter').addEventListener('change', applyFilters);
+        });
+
+        let allBookings = []; // Store all bookings for filtering
+
+        async function loadBookings() {
+            try {
+                const response = await fetch('http://localhost:8000/api/bookings/all/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    allBookings = await response.json();
+                    displayBookings(allBookings);
+                    updateFilterResults(allBookings.length, allBookings.length);
+                } else {
+                    console.error('Failed to load bookings:', response.status);
+                    // Show demo data if API fails
+                    displayDemoBookings();
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                // Show demo data on error
+                displayDemoBookings();
+            }
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const buildingFilter = document.getElementById('buildingFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            let filteredBookings = allBookings;
+
+            // Filter by status
+            if (statusFilter) {
+                filteredBookings = filteredBookings.filter(booking => 
+                    booking.status === statusFilter
+                );
+            }
+
+            // Filter by building
+            if (buildingFilter) {
+                filteredBookings = filteredBookings.filter(booking => 
+                    booking.room_details && booking.room_details.buildingName === buildingFilter
+                );
+            }
+
+            // Filter by date
+            if (dateFilter) {
+                filteredBookings = filteredBookings.filter(booking => {
+                    // Handle different date formats
+                    const bookingDate = booking.booking_date;
+                    if (!bookingDate) return false;
+                    
+                    // Convert both dates to YYYY-MM-DD format for comparison
+                    const filterDate = new Date(dateFilter).toISOString().split('T')[0];
+                    const bookingDateFormatted = new Date(bookingDate).toISOString().split('T')[0];
+                    
+                    return bookingDateFormatted === filterDate;
+                });
+            }
+
+            displayBookings(filteredBookings);
+            updateFilterResults(filteredBookings.length, allBookings.length);
+        }
+
+        function updateFilterResults(filteredCount, totalCount) {
+            const filterResults = document.getElementById('filterResults');
+            if (filteredCount === totalCount) {
+                filterResults.textContent = `Showing all ${totalCount} bookings`;
+            } else {
+                filterResults.textContent = `Showing ${filteredCount} of ${totalCount} bookings`;
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('buildingFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            displayBookings(allBookings);
+            updateFilterResults(allBookings.length, allBookings.length);
+        }
+
+        function loadBuildingFilters() {
+            try {
+                const response = fetch('http://localhost:8000/api/rooms/building-mapping/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                response.then(res => {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                    throw new Error('Failed to load buildings');
+                }).then(data => {
+                    const buildingFilter = document.getElementById('buildingFilter');
+                    buildingFilter.innerHTML = '<option value="">All Buildings</option>';
+                    
+                    // Get unique building names from the room_building_mapping
+                    const buildings = [...new Set(Object.values(data.room_building_mapping || {}))];
+                    buildings.forEach(building => {
+                        if (building) {
+                            const option = document.createElement('option');
+                            option.value = building;
+                            option.textContent = building;
+                            buildingFilter.appendChild(option);
+                        }
+                    });
+                }).catch(error => {
+                    console.error('Error loading buildings:', error);
+                    // Fallback to static buildings if API fails
+                    const buildingFilter = document.getElementById('buildingFilter');
+                    buildingFilter.innerHTML = `
+                        <option value="">All Buildings</option>
+                        <option value="Building A">Building A</option>
+                        <option value="Building B">Building B</option>
+                        <option value="Building C">Building C</option>
+                        <option value="Library">Library</option>
+                        <option value="STEM Building">STEM Building</option>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error in loadBuildingFilters:', error);
+            }
+        }
+
+        function displayDemoBookings() {
+            const demoBookings = [
+                {
+                    id: 1,
+                    user_name: "John Doe",
+                    room_details: { roomNumber: "A101", buildingName: "Building A" },
+                    booking_date: "2024-01-15",
+                    start_time: "09:00",
+                    end_time: "11:00",
+                    purpose: "Study Group",
+                    status: "pending",
+                    created_at: "2024-01-10T10:30:00Z"
+                },
+                {
+                    id: 2,
+                    user_name: "Jane Smith",
+                    room_details: { roomNumber: "B205", buildingName: "Building B" },
+                    booking_date: "2024-01-16",
+                    start_time: "14:00",
+                    end_time: "16:00",
+                    purpose: "Meeting",
+                    status: "confirmed",
+                    created_at: "2024-01-11T15:20:00Z"
+                }
+            ];
+            displayBookings(demoBookings);
+        }
+
+        function displayBookings(bookings) {
+            const tbody = document.getElementById('bookingsTableBody');
+            tbody.innerHTML = '';
+
+            if (bookings.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 20px; color: #666;">
+                            No bookings found matching the current filters.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            bookings.forEach(booking => {
+                const row = document.createElement('tr');
+                const userName = booking.user_name || booking.user || 'Unknown User';
+                const roomNumber = booking.room_details ? booking.room_details.roomNumber : booking.room;
+                const buildingName = booking.room_details ? booking.room_details.buildingName : 'Unknown Building';
+                const purpose = booking.purpose || 'N/A';
+                const createdDate = new Date(booking.created_at).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td>${booking.id}</td>
+                    <td>${userName}</td>
+                    <td>${roomNumber} (${buildingName})</td>
+                    <td>${booking.booking_date}</td>
+                    <td>${booking.start_time} - ${booking.end_time}</td>
+                    <td>${purpose}</td>
+                    <td><span class="status-${booking.status}">${booking.status}</span></td>
+                    <td>${createdDate}</td>
+                    <td class="action-buttons">
+                        ${booking.status === 'pending' ? `
+                            <button class="btn-approve" onclick="updateBookingStatus(${booking.id}, 'confirmed')">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn-reject" onclick="updateBookingStatus(${booking.id}, 'cancelled')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        ` : ''}
+                        <button class="btn-edit" onclick="editBooking(${booking.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-delete" onclick="deleteBooking(${booking.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function updateBookingStatus(bookingId, status) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}/status/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    loadBookings();
+                    loadStats();
+                } else {
+                    alert('Failed to update booking status');
+                }
+            } catch (error) {
+                console.error('Error updating booking status:', error);
+            }
+        }
+
+        async function deleteBooking(bookingId) {
+            if (confirm('Are you sure you want to delete this booking?')) {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Token ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        loadBookings();
+                        loadStats();
+                    } else {
+                        alert('Failed to delete booking');
+                    }
+                } catch (error) {
+                    console.error('Error deleting booking:', error);
+                }
+            }
+        }
+
+        function editBooking(bookingId) {
+            // Implement edit booking functionality
+            alert('Edit booking functionality will be implemented here');
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('http://localhost:8000/api/admin/stats/', {
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalBookings').textContent = stats.total_bookings || 0;
+                    document.getElementById('pendingBookings').textContent = stats.pending_bookings || 0;
+                    document.getElementById('confirmedBookings').textContent = stats.confirmed_bookings || 0;
+                    document.getElementById('todayBookings').textContent = stats.today_bookings || 0;
+                } else {
+                    console.error('Failed to load stats:', response.status);
+                    // Show demo stats if API fails
+                    showDemoStats();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Show demo stats on error
+                showDemoStats();
+            }
+        }
+
+        function showDemoStats() {
+            document.getElementById('totalBookings').textContent = '35';
+            document.getElementById('pendingBookings').textContent = '8';
+            document.getElementById('confirmedBookings').textContent = '25';
+            document.getElementById('todayBookings').textContent = '3';
+        }
+
+        function exportBookings() {
+            // Get current filtered bookings or all bookings
+            const currentBookings = document.getElementById('bookingsTableBody').children.length > 0 ? 
+                getCurrentFilteredBookings() : allBookings;
+            
+            if (currentBookings.length === 0) {
+                alert('No bookings to export!');
+                return;
+            }
+            
+            // Create CSV content
+            const csvContent = createCSVContent(currentBookings);
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `bookings_export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        function getCurrentFilteredBookings() {
+            // Get the currently displayed bookings based on filters
+            const statusFilter = document.getElementById('statusFilter').value;
+            const buildingFilter = document.getElementById('buildingFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            let filteredBookings = allBookings;
+            
+            if (statusFilter) {
+                filteredBookings = filteredBookings.filter(booking => 
+                    booking.status === statusFilter
+                );
+            }
+            
+            if (buildingFilter) {
+                filteredBookings = filteredBookings.filter(booking => 
+                    booking.room_details && booking.room_details.buildingName === buildingFilter
+                );
+            }
+            
+            if (dateFilter) {
+                filteredBookings = filteredBookings.filter(booking => {
+                    const bookingDate = booking.booking_date;
+                    if (!bookingDate) return false;
+                    const filterDate = new Date(dateFilter).toISOString().split('T')[0];
+                    const bookingDateFormatted = new Date(bookingDate).toISOString().split('T')[0];
+                    return bookingDateFormatted === filterDate;
+                });
+            }
+            
+            return filteredBookings;
+        }
+        
+        function createCSVContent(bookings) {
+            // CSV headers
+            const headers = [
+                'ID', 'User', 'Room', 'Building', 'Date', 'Start Time', 'End Time', 
+                'Purpose', 'Status', 'Created Date'
+            ];
+            
+            // CSV rows
+            const rows = bookings.map(booking => [
+                booking.id,
+                booking.user_name || booking.user || 'Unknown',
+                booking.room_details ? booking.room_details.roomNumber : booking.room || 'Unknown',
+                booking.room_details ? booking.room_details.buildingName : 'Unknown',
+                booking.booking_date,
+                booking.start_time,
+                booking.end_time,
+                booking.purpose || 'N/A',
+                booking.status,
+                new Date(booking.created_at).toLocaleDateString()
+            ]);
+            
+            // Combine headers and rows
+            const csvArray = [headers, ...rows];
+            
+            // Convert to CSV string
+            return csvArray.map(row => 
+                row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+        }
+    </script>
+</body>
+</html> 
