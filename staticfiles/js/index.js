@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
-    fetch('/auth/login/', {
+    fetch(window.location.origin +'/auth/login/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(data => {
       if (data.key) {
         localStorage.setItem('authToken', data.key);
-        fetch('/api/profile/', {
+        fetch(window.location.origin +'/api/profile/', {
           headers: { 'Authorization': 'Token ' + data.key }
         })
         .then(res => res.json())
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      fetch('/auth/registration/', {
+      fetch(window.location.origin +'/auth/registration/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const msgDiv = document.getElementById('reset-code-message');
     msgDiv.innerText = ""; // clear
     try {
-      const response = await fetch('/api/password_reset/', {
+      const response = await fetch(window.location.origin +'/api/password_reset/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     try {
-      const resp = await fetch("/api/password_reset/", {
+      const resp = await fetch(window.location.origin +"/api/password_reset/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const setPasswordToken = document.getElementById('set-password-token');
     const msgDiv = document.getElementById('reset-code-message');
     try {
-      const resp = await fetch("/api/password_reset/validate_token/", {
+      const resp = await fetch(window.location.origin +"/api/password_reset/validate_token/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token })
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     try {
-      const resp = await fetch("/api/password_reset/confirm/", {
+      const resp = await fetch(window.location.origin +"/api/password_reset/confirm/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token, password })

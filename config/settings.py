@@ -159,13 +159,20 @@ TEMPLATES = [
 
 
 
+
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # your static assets folder
+    os.path.join(BASE_DIR, 'static'),  # your local static/ folder
 ]
+
+# In production
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # for production collectstatic
 
