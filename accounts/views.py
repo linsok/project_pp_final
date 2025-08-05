@@ -1497,3 +1497,9 @@ def bookings_by_week(request, week_start_str):
     bookings = Booking.objects.filter(booking_date__gte=week_start, booking_date__lte=week_end)
     serializer = BookingSerializer(bookings, many=True)
     return Response(serializer.data)
+
+from django.shortcuts import render
+
+def index_view(request):
+    return render(request, 'index.html')
+

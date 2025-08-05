@@ -141,7 +141,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": [BASE_DIR / 'templates', BASE_DIR / 'frontend'],
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'frontend'],  # ✅ Only this line needed
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,6 +152,9 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
