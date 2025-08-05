@@ -60,7 +60,13 @@ INSTALLED_APPS = [
     'accounts',
     'corsheaders',
     'django_rest_passwordreset',
+    
+    
+    
+   
 ]
+
+SITE_ID = 1
 
 # Middleware
 MIDDLEWARE = [
@@ -176,7 +182,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SITE_ID = 1
+
 
 
 
